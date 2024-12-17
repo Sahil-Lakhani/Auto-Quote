@@ -65,7 +65,7 @@ class PdfService {
     );
   }
 
-  static pw.Widget _buildSection(QuoteSection section) {
+  static pw.Widget _buildSection(QuoteRoomType section) {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [

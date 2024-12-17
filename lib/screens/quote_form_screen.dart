@@ -40,7 +40,7 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
           ? DateTime.parse(_dateController.text)
           : DateTime.now(),
       sections: [
-        QuoteSection(
+        QuoteRoomType(
           title: 'Master Bedroom',
           items: [
             QuoteItem(
@@ -78,7 +78,7 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
             ),
           ],
         ),
-        QuoteSection(
+        QuoteRoomType(
           title: 'Other',
           items: [
             QuoteItem(
@@ -117,7 +117,7 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create report'),
+        title: const Text('Create Quotation'),
         actions: [
           IconButton(
             icon: const Icon(Icons.preview),
@@ -141,8 +141,8 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
             TextField(
               controller: _companyController,
               decoration: InputDecoration(
-                label: const Text('paitent Name'),
-                hintText: 'paitnet Name',
+                label: const Text('Company Name'),
+                hintText: 'Company Name',
                 prefixIcon: const Icon(Icons.business_outlined),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),

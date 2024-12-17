@@ -14,11 +14,11 @@ class QuoteItem {
   });
 }
 
-class QuoteSection {
+class QuoteRoomType {
   final String title;
   final List<QuoteItem> items;
 
-  QuoteSection({
+  QuoteRoomType({
     required this.title,
     required this.items,
   });
@@ -30,7 +30,7 @@ class Quote {
   final String phone;
   final String clientName;
   final DateTime date;
-  final List<QuoteSection> sections;
+  final List<QuoteRoomType> sections;
 
   Quote({
     required this.companyName,
