@@ -1,10 +1,16 @@
+import 'package:auto_quote/firebase_options.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'models/quote_model.dart';
 import 'screens/quote_preview_screen.dart';
 import 'screens/quote_form_screen.dart';
 import 'screens/product_form_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -48,7 +54,7 @@ class _MainScreenState extends State<MainScreen> {
       clientName: 'ravi varma',
       date: DateTime(2024, 10, 30),
       sections: [
-        QuoteSection(
+        QuoteRoomType(
           title: 'Master Bedroom',
           items: [
             QuoteItem(
@@ -86,7 +92,7 @@ class _MainScreenState extends State<MainScreen> {
             ),
           ],
         ),
-        QuoteSection(
+        QuoteRoomType(
           title: 'Other',
           items: [
             QuoteItem(
