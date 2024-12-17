@@ -43,3 +43,25 @@ app.*.map.json
 /android/app/release
 
 secret.dart
+
+# Firebase configuration and credentials
+**/firebase_options.dart
+**/*.env
+**/*.env.local
+**/*.env.development
+**/*.env.production
+
+# Google Services (e.g., Firebase)
+google-services.json
+GoogleService-Info.plist
+
+# Firebase configuration files
+**/firebase_app_id_file.json
+**/firebase_config.json
+
+# Firebase secrets and keys
+**/firebase_secrets.json
+**/service-account-key.json
+
+# Sensitive Firebase configuration
+**/firebase_credentials.json
