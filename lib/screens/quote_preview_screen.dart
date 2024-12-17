@@ -12,7 +12,7 @@ class QuotePreviewScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Quote Preview'),
+        title: const Text('Quote Preview screeen'),
       ),
       body: PdfPreview(
         build: (format) => PdfService.generateQuote(quote),

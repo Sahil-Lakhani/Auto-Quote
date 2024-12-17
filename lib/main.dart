@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'models/quote_model.dart';
 import 'screens/quote_preview_screen.dart';
+import 'screens/quote_form_screen.dart';
+import 'screens/product_form_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -14,18 +16,31 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Auto Quote',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      home: const MyHomePage(),
+      home: const MainScreen(),
     );
   }
 }
 
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key});
+class MainScreen extends StatefulWidget {
+  const MainScreen({super.key});
 
-  Quote _getSampleQuote() {
+  @override
+  State<MainScreen> createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen> {
+  int _selectedIndex = 0;
+
+  static final List<Widget> _screens = [
+    const QuoteFormScreen(),
+    const ProductFormScreen(),
+    QuotePreviewScreen(quote: _getSampleQuote()),
+  ];
+
+  static Quote _getSampleQuote() {
     return Quote(
       companyName: 'Design Que',
       address: 'address xyz',
@@ -92,26 +107,33 @@ class MyHomePage extends StatelessWidget {
     );
   }
 
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Auto Quote Generator'),
-      ),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => QuotePreviewScreen(
-                  quote: _getSampleQuote(),
-                ),
-              ),
-            );
-          },
-          child: const Text('Generate Sample Quote'),
-        ),
+      body: _screens[_selectedIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.description),
+            label: 'Quote',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.inventory),
+            label: 'Items',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.picture_as_pdf),
+            label: 'Preview',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
       ),
     );
   }
