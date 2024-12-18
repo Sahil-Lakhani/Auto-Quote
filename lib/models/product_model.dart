@@ -4,18 +4,14 @@ class Dimension {
   final int feet;
   final int inches;
 
-  Dimension({required this.feet, required this.inches});
+  const Dimension({required this.feet, required this.inches});
 
   String get formatted => '${feet}\'${inches}"';
 
-  Map<String, dynamic> toMap() {
-    return {
-      'feet': feet,
-      'inches': inches,
-    };
-  }
+  Map<String, dynamic> toMap() => {'feet': feet, 'inches': inches};
 
-  factory Dimension.fromMap(Map<String, dynamic> map) {
+  factory Dimension.fromMap(Map<String, dynamic>? map) {
+    if (map == null) return const Dimension(feet: 0, inches: 0);
     return Dimension(
       feet: map['feet'] ?? 0,
       inches: map['inches'] ?? 0,
