@@ -10,15 +10,14 @@ class QuoteFormScreen extends StatefulWidget {
 }
 
 class _QuoteFormScreenState extends State<QuoteFormScreen> {
-
   final _companyController = TextEditingController();
   final _addressController = TextEditingController();
   final _phoneController = TextEditingController();
   final _customerController = TextEditingController();
   final _dateController = TextEditingController();
 
-  // bool _isDiscountEnabled = false;
-  // bool _isGstEnabled = false;
+  bool _isDiscountEnabled = false;
+  bool _isGstEnabled = false;
 
   @override
   void dispose() {
@@ -207,120 +206,123 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                 ),
               ],
             ),
+
+            // for the roooms and items in that room wich is section and item from the model for the pdf
+            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.orange[50],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: TextField(
+                decoration: InputDecoration(
+                  hintText: 'Room Name',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.delete_outline),
+                    onPressed: () {
+                      // Handle delete
+                    },
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                // Handle add item
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                foregroundColor: Colors.white,
+                minimumSize: const Size(double.infinity, 48),
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.add),
+                  SizedBox(width: 8),
+                  Text('Add Item'),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                // Handle add room
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+                minimumSize: const Size(double.infinity, 48),
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.add),
+                  SizedBox(width: 8),
+                  Text('Add Room'),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Total'),
+                Text('₹0'),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Discount'),
+                Switch(
+                  value: _isDiscountEnabled,
+                  onChanged: (value) {
+                    setState(() {
+                      _isDiscountEnabled = value;
+                    });
+                  },
+                ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('GST'),
+                Switch(
+                  value: _isGstEnabled,
+                  onChanged: (value) {
+                    setState(() {
+                      _isGstEnabled = value;
+                    });
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Grand Total',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                Text('₹0', style: TextStyle(fontWeight: FontWeight.bold)),
+              ],
+            ),
+            const SizedBox(height: 24),
+            _buildExpandableSection('Payment Terms'),
+            const SizedBox(height: 16),
+            _buildExpandableSection('Material Specification'),
           ],
         ),
       ),
     );
   }
-  //       const SizedBox(height: 24),
-  //       Container(
-  //         padding: const EdgeInsets.all(16),
-  //         decoration: BoxDecoration(
-  //           color: Colors.orange[50],
-  //           borderRadius: BorderRadius.circular(8),
-  //         ),
-  //         child: TextField(
-  //           decoration: InputDecoration(
-  //             hintText: 'Room Name',
-  //             border: OutlineInputBorder(
-  //               borderRadius: BorderRadius.circular(8),
-  //             ),
-  //             suffixIcon: IconButton(
-  //               icon: const Icon(Icons.delete_outline),
-  //               onPressed: () {
-  //                 // Handle delete
-  //               },
-  //             ),
-  //           ),
-  //         ),
-  //       ),
-  //       const SizedBox(height: 16),
-  //       ElevatedButton(
-  //         onPressed: () {
-  //           // Handle add item
-  //         },
-  //         style: ElevatedButton.styleFrom(
-  //           backgroundColor: Colors.orange,
-  //           foregroundColor: Colors.white,
-  //           minimumSize: const Size(double.infinity, 48),
-  //         ),
-  //         child: const Row(
-  //           mainAxisAlignment: MainAxisAlignment.center,
-  //           children: [
-  //             Icon(Icons.add),
-  //             SizedBox(width: 8),
-  //             Text('Add Item'),
-  //           ],
-  //         ),
-  //       ),
-  //       const SizedBox(height: 16),
-  //       ElevatedButton(
-  //         onPressed: () {
-  //           // Handle add room
-  //         },
-  //         style: ElevatedButton.styleFrom(
-  //           backgroundColor: Colors.green,
-  //           foregroundColor: Colors.white,
-  //           minimumSize: const Size(double.infinity, 48),
-  //         ),
-  //         child: const Row(
-  //           mainAxisAlignment: MainAxisAlignment.center,
-  //           children: [
-  //             Icon(Icons.add),
-  //             SizedBox(width: 8),
-  //             Text('Add Room'),
-  //           ],
-  //         ),
-  //       ),
-  //       const SizedBox(height: 24),
-  //       const Row(
-  //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //         children: [
-  //           Text('Total'),
-  //           Text('₹0'),
-  //         ],
-  //       ),
-  //       const SizedBox(height: 16),
-  //       Row(
-  //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //         children: [
-  //           const Text('Discount'),
-  //           Switch(
-  //             value: _isDiscountEnabled,
-  //             onChanged: (value) {
-  //               setState(() {
-  //                 _isDiscountEnabled = value;
-  //               });
-  //             },
-  //           ),
-  //         ],
-  //       ),
-  //       Row(
-  //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //         children: [
-  //           const Text('GST'),
-  //           Switch(
-  //             value: _isGstEnabled,
-  //             onChanged: (value) {
-  //               setState(() {
-  //                 _isGstEnabled = value;
-  //               });
-  //             },
-  //           ),
-  //         ],
-  //       ),
-  //       const SizedBox(height: 16),
-  //       const Row(
-  //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //         children: [
-  //           Text('Grand Total', style: TextStyle(fontWeight: FontWeight.bold)),
-  //           Text('₹0', style: TextStyle(fontWeight: FontWeight.bold)),
-  //         ],
-  //       ),
-  //       const SizedBox(height: 24),
-  //       _buildExpandableSection('Payment Terms'),
-  //       const SizedBox(height: 16),
-  //       _buildExpandableSection('Material Specification'),
 
   Widget _buildExpandableSection(String title) {
     return Container(
