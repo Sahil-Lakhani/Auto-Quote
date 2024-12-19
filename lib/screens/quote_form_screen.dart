@@ -1,8 +1,10 @@
 import 'package:auto_quote/models/product_model.dart';
 import 'package:auto_quote/models/quote_model.dart';
+import 'package:auto_quote/providers/quote_form_provider.dart';
 import 'package:auto_quote/screens/quote_preview_screen.dart';
 import 'package:auto_quote/services/firebase_service.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class QuoteFormScreen extends StatefulWidget {
   const QuoteFormScreen({super.key});
@@ -20,11 +22,37 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
   final _roomTypeController = TextEditingController();
 
   final FirebaseService _firebaseService = FirebaseService();
-  final List<QuoteRoomType> _rooms = [];
   final Map<int, Product?> _selectedProducts = {};
-  final Map<int, int> _itemQuantities = {};
-  // bool _isDiscountEnabled = false;
-  // bool _isGstEnabled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final provider = context.read<QuoteFormProvider>();
+      _companyController.text = provider.companyName;
+      _addressController.text = provider.address;
+      _phoneController.text = provider.phone;
+      _customerController.text = provider.customerName;
+      _dateController.text = provider.date;
+
+      // Setup listeners
+      _companyController.addListener(() {
+        provider.updateCompanyName(_companyController.text);
+      });
+      _addressController.addListener(() {
+        provider.updateAddress(_addressController.text);
+      });
+      _phoneController.addListener(() {
+        provider.updatePhone(_phoneController.text);
+      });
+      _customerController.addListener(() {
+        provider.updateCustomerName(_customerController.text);
+      });
+      _dateController.addListener(() {
+        provider.updateDate(_dateController.text);
+      });
+    });
+  }
 
   @override
   void dispose() {
@@ -34,39 +62,34 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
     _customerController.dispose();
     _dateController.dispose();
     _roomTypeController.dispose();
-    // _selectedProducts.clear();
-    // _itemQuantities.clear();
     super.dispose();
   }
 
   void _addRoom() {
     if (_roomTypeController.text.isEmpty) return;
-    setState(() {
-      _rooms.add(QuoteRoomType(
+    final provider = context.read<QuoteFormProvider>();
+    provider.addRoom(QuoteRoomType(
         title: _roomTypeController.text,
         items: [],
       ));
       _roomTypeController.clear();
-    });
   }
 
   void _removeRoom(int index) {
-    setState(() {
-      _rooms.removeAt(index);
-    });
+    context.read<QuoteFormProvider>().removeRoom(index);
   }
 
   void _removeItem(int roomIndex, int itemIndex) {
-    setState(() {
-      _rooms[roomIndex].items.removeAt(itemIndex);
-    });
+    context.read<QuoteFormProvider>().removeItemFromRoom(roomIndex, itemIndex);
   }
 
   Widget _buildRoomsList() {
+    return Consumer<QuoteFormProvider>(
+      builder: (context, provider, child) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.start,
-      children: _rooms.asMap().entries.map((entry) {
+          children: provider.rooms.asMap().entries.map((entry) {
         final index = entry.key;
         final room = entry.value;
 
@@ -76,7 +99,6 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              // Room Title and Delete Button
               Padding(
                 padding: const EdgeInsets.only(left: 15),
                 child: Row(
@@ -96,8 +118,6 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                   ],
                 ),
               ),
-
-              // Item Selection Area
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Column(
@@ -133,11 +153,8 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                                       (product) => product.id == value,
                                     );
                                     setState(() {
-                                      _selectedProducts[index] =
-                                          selectedProduct;
-                                      if (_itemQuantities[index] == null) {
-                                        _itemQuantities[index] = 1;
-                                      }
+                                          _selectedProducts[index] = selectedProduct;
+                                          provider.updateItemQuantity(index, provider.itemQuantities[index] ?? 1);
                                     });
                                   }
                                 },
@@ -147,33 +164,27 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                         ),
                         IconButton(
                           icon: const Icon(Icons.remove),
-                          onPressed: _itemQuantities[index] == null ||
-                                  _itemQuantities[index]! <= 1
+                              onPressed: provider.itemQuantities[index] == null ||
+                                      provider.itemQuantities[index]! <= 1
                               ? null
                               : () {
-                                  setState(() {
-                                    _itemQuantities[index] =
-                                        _itemQuantities[index]! - 1;
-                                  });
+                                      provider.updateItemQuantity(
+                                          index, (provider.itemQuantities[index] ?? 1) - 1);
                                 },
                         ),
                         Text(
-                          '${_itemQuantities[index] ?? 1}',
+                              '${provider.itemQuantities[index] ?? 1}',
                           style: const TextStyle(fontSize: 16),
                         ),
                         IconButton(
                           icon: const Icon(Icons.add),
                           onPressed: () {
-                            setState(() {
-                              _itemQuantities[index] =
-                                  (_itemQuantities[index] ?? 1) + 1;
-                            });
+                                provider.updateItemQuantity(
+                                    index, (provider.itemQuantities[index] ?? 1) + 1);
                           },
                         ),
                       ],
                     ),
-
-                    // Action Buttons
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 16.0),
                       child: ElevatedButton(
@@ -181,7 +192,7 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                             ? null
                             : () {
                                 final product = _selectedProducts[index]!;
-                                final quantity = _itemQuantities[index] ?? 1;
+                                    final quantity = provider.itemQuantities[index] ?? 1;
 
                                 final item = QuoteItem(
                                   description: product.name,
@@ -198,11 +209,11 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                                   totalPrice: product.pricePerUnit * quantity,
                                 );
 
+                                    provider.addItemToRoom(index, item);
                                 setState(() {
-                                  _rooms[index].items.add(item);
                                   _selectedProducts.remove(index);
-                                  _itemQuantities.remove(index);
                                 });
+                                    provider.itemQuantities.remove(index);
                               },
                         child: const Text('Add Item'),
                       ),
@@ -210,8 +221,6 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                   ],
                 ),
               ),
-
-              // Added Items List
               if (room.items.isNotEmpty)
                 ListView.builder(
                   shrinkWrap: true,
@@ -225,11 +234,6 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
-                          Divider(
-                            color: Colors.grey[500],
-                            indent: 02,
-                            endIndent: 15,
-                          ),
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -242,8 +246,7 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                                 ),
                               ),
                               IconButton(
-                                icon:
-                                    const Icon(Icons.delete, color: Colors.red),
+                                    icon: const Icon(Icons.delete, color: Colors.red),
                                 onPressed: () => _removeItem(index, itemIndex),
                               ),
                             ],
@@ -274,6 +277,11 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                               ),
                             ],
                           ),
+                              Divider(
+                                color: Colors.grey[500],
+                                indent: 02,
+                                endIndent: 15,
+                              ),
                         ],
                       ),
                     );
@@ -284,18 +292,21 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
         );
       }).toList(),
     );
+      },
+    );
   }
 
   Quote _createQuote() {
+    final provider = context.read<QuoteFormProvider>();
     return Quote(
-      companyName: _companyController.text,
-      address: _addressController.text,
-      phone: _phoneController.text,
-      clientName: _customerController.text,
-      date: _dateController.text.isNotEmpty
-          ? DateTime.parse(_dateController.text)
+      companyName: provider.companyName,
+      address: provider.address,
+      phone: provider.phone,
+      clientName: provider.customerName,
+      date: provider.date.isNotEmpty
+          ? DateTime.parse(provider.date)
           : DateTime.now(),
-      sections: _rooms,
+      sections: provider.rooms,
     );
   }
 
@@ -308,7 +319,8 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
     );
     if (picked != null) {
       setState(() {
-        _dateController.text = picked.toIso8601String().split('T')[0];
+        final provider = context.read<QuoteFormProvider>();
+        provider.updateDate(picked.toIso8601String().split('T')[0]);
       });
     }
   }

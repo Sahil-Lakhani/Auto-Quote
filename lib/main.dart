@@ -5,13 +5,22 @@ import 'models/quote_model.dart';
 import 'screens/quote_preview_screen.dart';
 import 'screens/quote_form_screen.dart';
 import 'screens/product_form_screen.dart';
+import 'package:auto_quote/providers/quote_form_provider.dart';
+import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => QuoteFormProvider()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
