@@ -1,5 +1,7 @@
+import 'package:auto_quote/models/product_model.dart';
 import 'package:auto_quote/models/quote_model.dart';
 import 'package:auto_quote/screens/quote_preview_screen.dart';
+import 'package:auto_quote/services/firebase_service.dart';
 import 'package:flutter/material.dart';
 
 class QuoteFormScreen extends StatefulWidget {
@@ -15,9 +17,14 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
   final _phoneController = TextEditingController();
   final _customerController = TextEditingController();
   final _dateController = TextEditingController();
+  final _roomTypeController = TextEditingController();
 
-  bool _isDiscountEnabled = false;
-  bool _isGstEnabled = false;
+  final FirebaseService _firebaseService = FirebaseService();
+  final List<QuoteRoomType> _rooms = [];
+  final Map<int, Product?> _selectedProducts = {};
+  final Map<int, int> _itemQuantities = {};
+  // bool _isDiscountEnabled = false;
+  // bool _isGstEnabled = false;
 
   @override
   void dispose() {
@@ -26,7 +33,252 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
     _phoneController.dispose();
     _customerController.dispose();
     _dateController.dispose();
+    _roomTypeController.dispose();
+    // _selectedProducts.clear();
+    // _itemQuantities.clear();
     super.dispose();
+  }
+
+  void _addRoom() {
+    if (_roomTypeController.text.isEmpty) return;
+    setState(() {
+      _rooms.add(QuoteRoomType(
+        title: _roomTypeController.text,
+        items: [],
+      ));
+      _roomTypeController.clear();
+    });
+  }
+
+  void _removeRoom(int index) {
+    setState(() {
+      _rooms.removeAt(index);
+    });
+  }
+
+  void _removeItem(int roomIndex, int itemIndex) {
+    setState(() {
+      _rooms[roomIndex].items.removeAt(itemIndex);
+    });
+  }
+
+  Widget _buildRoomsList() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: _rooms.asMap().entries.map((entry) {
+        final index = entry.key;
+        final room = entry.value;
+
+        return Card(
+          margin: const EdgeInsets.only(bottom: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              // Room Title and Delete Button
+              Padding(
+                padding: const EdgeInsets.only(left: 15),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      room.title,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () => _removeRoom(index),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Item Selection Area
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    // Item Dropdown and Counter
+                    Row(
+                      children: [
+                        Expanded(
+                          child: StreamBuilder<List<Product>>(
+                            stream: _firebaseService.getProducts(),
+                            builder: (context, snapshot) {
+                              if (!snapshot.hasData) {
+                                return const CircularProgressIndicator();
+                              }
+
+                              final products = snapshot.data!;
+                              return DropdownButtonFormField<String>(
+                                value: _selectedProducts[index]?.id,
+                                decoration: const InputDecoration(
+                                  labelText: 'Select Item',
+                                  border: OutlineInputBorder(),
+                                ),
+                                items: products.map((product) {
+                                  return DropdownMenuItem(
+                                    value: product.id,
+                                    child: Text(product.name),
+                                  );
+                                }).toList(),
+                                onChanged: (String? value) {
+                                  if (value != null) {
+                                    final selectedProduct = products.firstWhere(
+                                      (product) => product.id == value,
+                                    );
+                                    setState(() {
+                                      _selectedProducts[index] =
+                                          selectedProduct;
+                                      if (_itemQuantities[index] == null) {
+                                        _itemQuantities[index] = 1;
+                                      }
+                                    });
+                                  }
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.remove),
+                          onPressed: _itemQuantities[index] == null ||
+                                  _itemQuantities[index]! <= 1
+                              ? null
+                              : () {
+                                  setState(() {
+                                    _itemQuantities[index] =
+                                        _itemQuantities[index]! - 1;
+                                  });
+                                },
+                        ),
+                        Text(
+                          '${_itemQuantities[index] ?? 1}',
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.add),
+                          onPressed: () {
+                            setState(() {
+                              _itemQuantities[index] =
+                                  (_itemQuantities[index] ?? 1) + 1;
+                            });
+                          },
+                        )
+                      ],
+                    ),
+
+                    // Action Buttons
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      child: ElevatedButton(
+                        onPressed: _selectedProducts[index] == null
+                            ? null
+                            : () {
+                                final product = _selectedProducts[index]!;
+                                final quantity = _itemQuantities[index] ?? 1;
+
+                                final item = QuoteItem(
+                                  description: product.name,
+                                  dimensions: [
+                                    if (product.height != null)
+                                      'H: ${product.height!.formatted}',
+                                    if (product.width != null)
+                                      'W: ${product.width!.formatted}',
+                                    if (product.depth != null)
+                                      'D: ${product.depth!.formatted}',
+                                  ].join(' × '),
+                                  areaOrQuantity: quantity.toDouble(),
+                                  unitPrice: product.pricePerUnit,
+                                  totalPrice: product.pricePerUnit * quantity,
+                                );
+
+                                setState(() {
+                                  _rooms[index].items.add(item);
+                                  _selectedProducts.remove(index);
+                                  _itemQuantities.remove(index);
+                                });
+                              },
+                        child: const Text('Add Item'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Added Items List
+              if (room.items.isNotEmpty)
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: room.items.length,
+                  itemBuilder: (context, itemIndex) {
+                    final item = room.items[itemIndex];
+                    return Padding(
+                      padding: const EdgeInsets.only(left: 15),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(item.description),
+                              IconButton(
+                                icon:
+                                    const Icon(Icons.delete, color: Colors.red),
+                                onPressed: () => _removeItem(index, itemIndex),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  if (item.dimensions != null)
+                                    Text(item.dimensions!),
+                                  Text('Price: ₹${item.unitPrice}'),
+                                  Text('Quantity: ${item.areaOrQuantity}'),
+                                ],
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(right: 15),
+                                child: Text(
+                                  '₹${item.totalPrice}',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          Divider(
+                            color: Colors.grey[500],
+                            indent: 02,
+                            endIndent: 15,
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
   }
 
   Quote _createQuote() {
@@ -38,63 +290,64 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
       date: _dateController.text.isNotEmpty
           ? DateTime.parse(_dateController.text)
           : DateTime.now(),
-      sections: [
-        QuoteRoomType(
-          title: 'Master Bedroom',
-          items: [
-            QuoteItem(
-              description: 'Bed -with Storage - Surrounded Cushioning',
-              areaOrQuantity: 1,
-              unitPrice: 85000,
-              totalPrice: 85000,
-            ),
-            QuoteItem(
-              description: 'Wardrobe - Sliding Shutter - with Laminates',
-              dimensions: "8'w x 7'h ft",
-              areaOrQuantity: 56,
-              unitPrice: 1850,
-              totalPrice: 103600,
-            ),
-            QuoteItem(
-              description: 'Walk-In Wardrobe - Loft Units - with Laminate',
-              dimensions: "8'w x 2'h ft",
-              areaOrQuantity: 16,
-              unitPrice: 1150,
-              totalPrice: 18400,
-            ),
-            QuoteItem(
-              description: 'Wall Light',
-              areaOrQuantity: 1,
-              unitPrice: 3000,
-              totalPrice: 3000,
-            ),
-            QuoteItem(
-              description: 'Bedback Panel with duco paint and louvers',
-              dimensions: "10'w x 9.5'h ft",
-              areaOrQuantity: 95,
-              unitPrice: 800,
-              totalPrice: 76000,
-            ),
-          ],
-        ),
-        QuoteRoomType(
-          title: 'Other',
-          items: [
-            QuoteItem(
-              description: 'False Ceiling - Painting - Asian Paints',
-              areaOrQuantity: 120,
-              unitPrice: 25,
-              totalPrice: 3000,
-            ),
-            QuoteItem(
-              description: 'False Ceiling - Saint Gobain Brand',
-              areaOrQuantity: 120,
-              unitPrice: 60,
-              totalPrice: 7200,
-            ),
-          ],
-        ),
-      ], 
+      sections: _rooms,
+      // [
+      //   QuoteRoomType(
+      //     title: 'Master Bedroom',
+      //     items: [
+      //       QuoteItem(
+      //         description: 'Bed -with Storage - Surrounded Cushioning',
+      //         areaOrQuantity: 1,
+      //         unitPrice: 85000,
+      //         totalPrice: 85000,
+      //       ),
+      //       QuoteItem(
+      //         description: 'Wardrobe - Sliding Shutter - with Laminates',
+      //         dimensions: "8'w x 7'h ft",
+      //         areaOrQuantity: 56,
+      //         unitPrice: 1850,
+      //         totalPrice: 103600,
+      //       ),
+      //       QuoteItem(
+      //         description: 'Walk-In Wardrobe - Loft Units - with Laminate',
+      //         dimensions: "8'w x 2'h ft",
+      //         areaOrQuantity: 16,
+      //         unitPrice: 1150,
+      //         totalPrice: 18400,
+      //       ),
+      //       QuoteItem(
+      //         description: 'Wall Light',
+      //         areaOrQuantity: 1,
+      //         unitPrice: 3000,
+      //         totalPrice: 3000,
+      //       ),
+      //       QuoteItem(
+      //         description: 'Bedback Panel with duco paint and louvers',
+      //         dimensions: "10'w x 9.5'h ft",
+      //         areaOrQuantity: 95,
+      //         unitPrice: 800,
+      //         totalPrice: 76000,
+      //       ),
+      //     ],
+      //   ),
+      //   QuoteRoomType(
+      //     title: 'Other',
+      //     items: [
+      //       QuoteItem(
+      //         description: 'False Ceiling - Painting - Asian Paints',
+      //         areaOrQuantity: 120,
+      //         unitPrice: 25,
+      //         totalPrice: 3000,
+      //       ),
+      //       QuoteItem(
+      //         description: 'False Ceiling - Saint Gobain Brand',
+      //         areaOrQuantity: 120,
+      //         unitPrice: 60,
+      //         totalPrice: 7200,
+      //       ),
+      //     ],
+      //   ),
+      // ],
     );
   }
 
@@ -206,118 +459,46 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                 ),
               ],
             ),
-
-            // for the roooms and items in that room wich is section and item from the model for the pdf
-            const SizedBox(height: 24),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.orange[50],
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: 'Room Name',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.delete_outline),
-                    onPressed: () {
-                      // Handle delete
-                    },
-                  ),
-                ),
-              ),
-            ),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                // Handle add item
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
-                foregroundColor: Colors.white,
-                minimumSize: const Size(double.infinity, 48),
+            const Text(
+              'Rooms',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
               ),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.add),
-                  SizedBox(width: 8),
-                  Text('Add Item'),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                // Handle add room
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                foregroundColor: Colors.white,
-                minimumSize: const Size(double.infinity, 48),
-              ),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.add),
-                  SizedBox(width: 8),
-                  Text('Add Room'),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-            const Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Total'),
-                Text('₹0'),
-              ],
             ),
             const SizedBox(height: 16),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Discount'),
-                Switch(
-                  value: _isDiscountEnabled,
-                  onChanged: (value) {
-                    setState(() {
-                      _isDiscountEnabled = value;
-                    });
-                  },
+                Expanded(
+                  child: TextField(
+                    controller: _roomTypeController,
+                    decoration: InputDecoration(
+                      label: const Text('Room Type'),
+                      hintText: 'Master Bedroom, Living Room',
+                      prefixIcon: const Icon(Icons.room_preferences),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                 ),
-              ],
+                  ),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('GST'),
-                Switch(
-                  value: _isGstEnabled,
-                  onChanged: (value) {
-                    setState(() {
-                      _isGstEnabled = value;
-                    });
-                  },
+                const SizedBox(width: 16),
+                ElevatedButton.icon(
+                  onPressed: _addRoom,
+                  icon: const Icon(Icons.add),
+                  label: const Text('Add Room'),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 16,
+                    ),
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            const Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Grand Total',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-                Text('₹0', style: TextStyle(fontWeight: FontWeight.bold)),
-              ],
-            ),
-            const SizedBox(height: 24),
-            _buildExpandableSection('Payment Terms'),
-            const SizedBox(height: 16),
-            _buildExpandableSection('Material Specification'),
+            _buildRoomsList(),
           ],
         ),
       ),
