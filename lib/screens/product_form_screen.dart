@@ -81,13 +81,13 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
             Text('Price: ₹${product.pricePerUnit}'),
             if (product.height != null || product.width != null || product.depth != null)
               Text(
-                'Dimensions: ${[
+                [
                   if (product.height != null) 'H: ${product.height!.formatted}',
                   if (product.width != null) 'W: ${product.width!.formatted}',
                   if (product.depth != null) 'D: ${product.depth!.formatted}',
-                ].join(' × ')}',
+                ].join(' × '),
               ),
-            if (product.other != null) Text('Other: ${product.other}'),
+            // if (product.other != null) Text('Other: ${product.other}'),
           ],
         ),
         trailing: Row(

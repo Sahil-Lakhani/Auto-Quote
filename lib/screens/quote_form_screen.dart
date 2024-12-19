@@ -428,9 +428,9 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
-                ),
+                    ),
                   ),
-            ),
+                ),
                 const SizedBox(width: 16),
                 ElevatedButton.icon(
                   onPressed: _addRoom,

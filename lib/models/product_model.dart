@@ -82,4 +82,16 @@ class Product {
       createdAt: (data['createdAt'] as Timestamp).toDate(),
     );
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is Product && 
+        other.id == id &&
+        other.name == name &&
+        other.pricePerUnit == pricePerUnit;
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name, pricePerUnit);
 }
