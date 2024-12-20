@@ -1,14 +1,14 @@
 class QuoteItem {
   final String description;
   final String? dimensions;
-  final double areaOrQuantity;
+  final int? quantity;
   final double unitPrice;
   final double totalPrice;
 
   QuoteItem({
     required this.description,
     this.dimensions,
-    required this.areaOrQuantity,
+    this.quantity,
     required this.unitPrice,
     required this.totalPrice,
   });

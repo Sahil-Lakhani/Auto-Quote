@@ -204,7 +204,7 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                                     if (product.depth != null)
                                       'D: ${product.depth!.formatted}',
                                   ].join(' × '),
-                                  areaOrQuantity: quantity.toDouble(),
+                                      quantity: quantity.toInt(),
                                   unitPrice: product.pricePerUnit,
                                   totalPrice: product.pricePerUnit * quantity,
                                 );
@@ -262,7 +262,7 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                                   if (item.dimensions != null)
                                     Text(item.dimensions!),
                                   Text('Price: ₹${item.unitPrice}'),
-                                  Text('Quantity: ${item.areaOrQuantity}'),
+                                      Text('Quantity: ${item.quantity}'),
                                 ],
                               ),
                               Padding(
