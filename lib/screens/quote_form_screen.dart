@@ -23,6 +23,7 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
 
   final FirebaseService _firebaseService = FirebaseService();
   final Map<int, Product?> _selectedProducts = {};
+  Set<int> _roomsInAddMode = {}; // Track which rooms are in add mode
 
   @override
   void initState() {
@@ -387,7 +388,7 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                       ),
                     if (!isInAddMode)
                       Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
+                        padding: const EdgeInsets.only(bottom: 10, top: 8),
                         child: Center(
                           child: ElevatedButton.icon(
                             onPressed: () => _toggleAddMode(index),
