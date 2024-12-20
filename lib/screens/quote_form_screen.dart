@@ -88,7 +88,19 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
   }
 
   double _calculateGrandTotal(List<QuoteRoomType> rooms) {
-    return rooms.fold(0.0, (sum, room) => sum + _calculateRoomTotal(room.items));
+    return rooms.fold(
+        0.0, (sum, room) => sum + _calculateRoomTotal(room.items));
+  }
+
+  void _toggleAddMode(int roomIndex) {
+    setState(() {
+      if (_roomsInAddMode.contains(roomIndex)) {
+        _roomsInAddMode.remove(roomIndex);
+        _selectedProducts.remove(roomIndex);
+      } else {
+        _roomsInAddMode.add(roomIndex);
+      }
+    });
   }
 
   Widget _buildRoomsList() {
@@ -104,15 +116,16 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
         final index = entry.key;
         final room = entry.value;
               final roomTotal = _calculateRoomTotal(room.items);
+              final isInAddMode = _roomsInAddMode.contains(index);
 
         return Card(
-          margin: const EdgeInsets.only(bottom: 8),
+                margin: const EdgeInsets.only(bottom: 5),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.only(left: 15),
+                      padding: const EdgeInsets.all(15),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -130,110 +143,12 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                   ],
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: StreamBuilder<List<Product>>(
-                            stream: _firebaseService.getProducts(),
-                            builder: (context, snapshot) {
-                              if (!snapshot.hasData) {
-                                return const CircularProgressIndicator();
-                              }
-
-                              final products = snapshot.data!;
-                              return DropdownButtonFormField<String>(
-                                value: _selectedProducts[index]?.id,
-                                decoration: const InputDecoration(
-                                  labelText: 'Select Item',
-                                  border: OutlineInputBorder(),
-                                ),
-                                items: products.map((product) {
-                                  return DropdownMenuItem(
-                                    value: product.id,
-                                    child: Text(product.name),
-                                  );
-                                }).toList(),
-                                onChanged: (String? value) {
-                                  if (value != null) {
-                                    final selectedProduct = products.firstWhere(
-                                      (product) => product.id == value,
-                                    );
-                                    setState(() {
-                                          _selectedProducts[index] = selectedProduct;
-                                          provider.updateItemQuantity(index, provider.itemQuantities[index] ?? 1);
-                                    });
-                                  }
-                                },
-                              );
-                            },
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.remove),
-                              onPressed: provider.itemQuantities[index] == null ||
-                                      provider.itemQuantities[index]! <= 1
-                              ? null
-                              : () {
-                                      provider.updateItemQuantity(
-                                          index, (provider.itemQuantities[index] ?? 1) - 1);
-                                },
-                        ),
-                        Text(
-                              '${provider.itemQuantities[index] ?? 1}',
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.add),
-                          onPressed: () {
-                                provider.updateItemQuantity(
-                                    index, (provider.itemQuantities[index] ?? 1) + 1);
-                          },
-                        ),
-                      ],
+                    Divider(
+                      color: Colors.grey[300],
+                      thickness: 1,
+                      height: 1,
                     ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16.0),
-                      child: ElevatedButton(
-                        onPressed: _selectedProducts[index] == null
-                            ? null
-                            : () {
-                                final product = _selectedProducts[index]!;
-                                    final quantity = provider.itemQuantities[index] ?? 1;
-
-                                final item = QuoteItem(
-                                  description: product.name,
-                                  dimensions: [
-                                    if (product.height != null)
-                                      'H: ${product.height!.formatted}',
-                                    if (product.width != null)
-                                      'W: ${product.width!.formatted}',
-                                    if (product.depth != null)
-                                      'D: ${product.depth!.formatted}',
-                                  ].join(' × '),
-                                      quantity: quantity.toInt(),
-                                  unitPrice: product.pricePerUnit,
-                                  totalPrice: product.pricePerUnit * quantity,
-                                );
-
-                                    provider.addItemToRoom(index, item);
-                                setState(() {
-                                  _selectedProducts.remove(index);
-                                });
-                                    provider.itemQuantities.remove(index);
-                              },
-                        child: const Text('Add Item'),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-                    if (room.items.isNotEmpty) ...[
+                    if (room.items.isNotEmpty)
                 ListView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -241,14 +156,16 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                   itemBuilder: (context, itemIndex) {
                     final item = room.items[itemIndex];
                     return Padding(
-                      padding: const EdgeInsets.only(left: 15, bottom: 10),
+                            padding:
+                                const EdgeInsets.only(left: 15,),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
                                 item.description,
@@ -258,18 +175,23 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                                 ),
                               ),
                               IconButton(
-                                    icon: const Icon(Icons.delete, color: Colors.red),
-                                onPressed: () => _removeItem(index, itemIndex),
+                                      icon: const Icon(Icons.delete,
+                                          color: Colors.red),
+                                      onPressed: () =>
+                                          _removeItem(index, itemIndex),
                               ),
                             ],
                           ),
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                             children: [
                               Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
                                 children: [
                                   if (item.dimensions != null)
                                     Text(item.dimensions!),
@@ -290,6 +212,7 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                             ],
                           ),
                               Divider(
+                                  height: 25,
                                 color: Colors.grey[500],
                                 indent: 02,
                                 endIndent: 15,
@@ -299,7 +222,181 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                     );
                   },
                 ),
-                      // Room Subtotal
+                    if (isInAddMode)
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          children: [
+                            StreamBuilder<List<Product>>(
+                              stream: _firebaseService.getProducts(),
+                              builder: (context, snapshot) {
+                                if (!snapshot.hasData) {
+                                  return const CircularProgressIndicator();
+                                }
+
+                                final products = snapshot.data!;
+                                return Column(
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: StreamBuilder<List<Product>>(
+                                            stream:
+                                                _firebaseService.getProducts(),
+                                            builder: (context, snapshot) {
+                                              if (!snapshot.hasData) {
+                                                return const CircularProgressIndicator();
+                                              }
+
+                                              final products = snapshot.data!;
+                                              return DropdownButtonFormField<
+                                                  String>(
+                                                value: _selectedProducts[index]
+                                                    ?.id,
+                                                decoration:
+                                                    const InputDecoration(
+                                                  labelText: 'Select Item',
+                                                  border: OutlineInputBorder(),
+                                                ),
+                                                items: products.map((product) {
+                                                  return DropdownMenuItem(
+                                                    value: product.id,
+                                                    child: Text(product.name),
+                                                  );
+                                                }).toList(),
+                                                onChanged: (String? value) {
+                                                  if (value != null) {
+                                                    final selectedProduct =
+                                                        products.firstWhere(
+                                                      (product) =>
+                                                          product.id == value,
+                                                    );
+                                                    setState(() {
+                                                      _selectedProducts[index] =
+                                                          selectedProduct;
+                                                      provider.updateItemQuantity(
+                                                          index,
+                                                          provider.itemQuantities[
+                                                                  index] ??
+                                                              1);
+                                                    });
+                                                  }
+                                                },
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(Icons.remove),
+                                          onPressed:
+                                              provider.itemQuantities[index] ==
+                                                          null ||
+                                                      provider.itemQuantities[
+                                                              index]! <=
+                                                          1
+                                                  ? null
+                                                  : () {
+                                                      provider.updateItemQuantity(
+                                                          index,
+                                                          (provider.itemQuantities[
+                                                                      index] ??
+                                                                  1) -
+                                                              1);
+                                                    },
+                                        ),
+                                        Text(
+                                          '${provider.itemQuantities[index] ?? 1}',
+                                          style: const TextStyle(fontSize: 16),
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(Icons.add),
+                                          onPressed: () {
+                                            provider.updateItemQuantity(
+                                                index,
+                                                (provider.itemQuantities[
+                                                            index] ??
+                                                        1) +
+                                                    1);
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        ElevatedButton(
+                                          onPressed: _selectedProducts[index] ==
+                                                  null
+                                              ? null
+                                              : () {
+                                                  final product =
+                                                      _selectedProducts[index]!;
+                                                  final quantity =
+                                                      provider.itemQuantities[
+                                                              index] ??
+                                                          1;
+
+                                                  final item = QuoteItem(
+                                                    description: product.name,
+                                                    dimensions: [
+                                                      if (product.height !=
+                                                          null)
+                                                        'H: ${product.height!.formatted}',
+                                                      if (product.width != null)
+                                                        'W: ${product.width!.formatted}',
+                                                      if (product.depth != null)
+                                                        'D: ${product.depth!.formatted}',
+                                                    ].join(' × '),
+                                                    quantity: quantity.toInt(),
+                                                    unitPrice:
+                                                        product.pricePerUnit,
+                                                    totalPrice:
+                                                        product.pricePerUnit *
+                                                            quantity,
+                                                  );
+
+                                                  provider.addItemToRoom(
+                                                      index, item);
+                                                  setState(() {
+                                                    _selectedProducts
+                                                        .remove(index);
+                                                    _roomsInAddMode
+                                                        .remove(index);
+                                                  });
+                                                  provider.itemQuantities
+                                                      .remove(index);
+                                                },
+                                          child: const Text('Add'),
+                                        ),
+                                        const SizedBox(width: 16),
+                                        OutlinedButton(
+                                          onPressed: () =>
+                                              _toggleAddMode(index),
+                                          child: const Text('Cancel'),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    if (!isInAddMode)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: Center(
+                          child: ElevatedButton.icon(
+                            onPressed: () => _toggleAddMode(index),
+                            icon: const Icon(Icons.add),
+                            label: const Text('Add Item'),
+                          ),
+                        ),
+                      ),
+                    if (room.items.isNotEmpty)
                       Container(
                         padding: const EdgeInsets.all(15),
                         decoration: BoxDecoration(
@@ -328,12 +425,10 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                           ],
                         ),
                       ),
-                    ],
             ],
           ),
         );
       }).toList(),
-            // Grand Total
             if (provider.rooms.isNotEmpty)
               Card(
                 margin: const EdgeInsets.only(top: 16),
