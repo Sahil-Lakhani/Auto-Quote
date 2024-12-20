@@ -83,15 +83,27 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
     context.read<QuoteFormProvider>().removeItemFromRoom(roomIndex, itemIndex);
   }
 
+  double _calculateRoomTotal(List<QuoteItem> items) {
+    return items.fold(0.0, (sum, item) => sum + item.totalPrice);
+  }
+
+  double _calculateGrandTotal(List<QuoteRoomType> rooms) {
+    return rooms.fold(0.0, (sum, room) => sum + _calculateRoomTotal(room.items));
+  }
+
   Widget _buildRoomsList() {
     return Consumer<QuoteFormProvider>(
       builder: (context, provider, child) {
+        final grandTotal = _calculateGrandTotal(provider.rooms);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.start,
-          children: provider.rooms.asMap().entries.map((entry) {
+          children: [
+            ...provider.rooms.asMap().entries.map((entry) {
         final index = entry.key;
         final room = entry.value;
+              final roomTotal = _calculateRoomTotal(room.items);
 
         return Card(
           margin: const EdgeInsets.only(bottom: 8),
@@ -221,7 +233,7 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                   ],
                 ),
               ),
-              if (room.items.isNotEmpty)
+                    if (room.items.isNotEmpty) ...[
                 ListView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -287,10 +299,70 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                     );
                   },
                 ),
+                      // Room Subtotal
+                      Container(
+                        padding: const EdgeInsets.all(15),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[100],
+                          border: Border(
+                            top: BorderSide(color: Colors.grey[300]!),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Room Total:',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            Text(
+                              '₹${roomTotal.toStringAsFixed(2)}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
             ],
           ),
         );
       }).toList(),
+            // Grand Total
+            if (provider.rooms.isNotEmpty)
+              Card(
+                margin: const EdgeInsets.only(top: 16),
+                color: Colors.blue[50],
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Grand Total:',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
+                      Text(
+                        '₹${grandTotal.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          color: Colors.blue,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+          ],
     );
       },
     );
