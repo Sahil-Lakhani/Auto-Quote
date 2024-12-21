@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:auto_quote/models/quote_model.dart';
 import 'package:flutter/material.dart';
 
 class QuoteFormProvider extends ChangeNotifier {
   String companyName = '';
   String address = '';
+  File? _logoFile; 
   String phone = '';
   String customerName = '';
   String date = '';
@@ -28,7 +31,7 @@ class QuoteFormProvider extends ChangeNotifier {
 
   // Calculate grand total (room total with GST + transport + labor)
   double get grandTotal => (roomTotal * 1.18) + transportCharges + laborCharges;
-
+  File? get logoFile => _logoFile;
   void updateCompanyName(String value) {
     companyName = value;
     notifyListeners();
@@ -39,6 +42,16 @@ class QuoteFormProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void updateLogo(File? file) {
+    _logoFile = file;
+    notifyListeners();
+  }
+
+  // Add method to remove logo
+  void removeLogo() {
+    _logoFile = null;
+    notifyListeners();
+  }
   void updatePhone(String value) {
     phone = value;
     notifyListeners();
@@ -102,6 +115,7 @@ class QuoteFormProvider extends ChangeNotifier {
   void clearForm() {
     companyName = '';
     address = '';
+     _logoFile = null;
     phone = '';
     customerName = '';
     date = '';

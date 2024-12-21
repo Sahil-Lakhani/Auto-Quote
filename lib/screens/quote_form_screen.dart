@@ -125,17 +125,15 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
     try {
       final XFile? image = await _picker.pickImage(
         source: ImageSource.gallery,
-        maxWidth: 512, // Limit image size for preview
+        maxWidth: 512,
         maxHeight: 512,
       );
 
       if (image == null) return;
 
-      setState(() {
-        _logoFile = File(image.path);
-      });
+      final logoFile = File(image.path);
+      context.read<QuoteFormProvider>().updateLogo(logoFile);
 
-      // Show success message
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -157,20 +155,22 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
   }
 
   Widget _buildLogoPreview() {
+    return Consumer<QuoteFormProvider>(
+      builder: (context, provider, child) {
     return Container(
       height: 128,
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: _logoFile != null
+          child: provider.logoFile != null
           ? Stack(
               fit: StackFit.expand,
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: Image.file(
-                    _logoFile!,
+                        provider.logoFile!,
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -192,12 +192,9 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                         size: 16, 
                       ),
                       padding: EdgeInsets.zero, 
-                      constraints:
-                          const BoxConstraints(), 
+                          constraints: const BoxConstraints(),
                       onPressed: () {
-                        setState(() {
-                          _logoFile = null;
-                        });
+                            provider.removeLogo();
                       },
                     ),
                   ),
@@ -212,12 +209,14 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
               ),
             ),
     );
+      },
+    );
   }
 
   Widget _buildRoomsList() {
     return Consumer<QuoteFormProvider>(
       builder: (context, provider, child) {
-        final grandTotal = _calculateGrandTotal(provider.rooms);
+        // final grandTotal = _calculateGrandTotal(provider.rooms);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -346,7 +345,7 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                                   return const CircularProgressIndicator();
                                 }
 
-                                final products = snapshot.data!;
+                                // final products = snapshot.data!;
                                 return Column(
                                   children: [
                                     Row(
@@ -711,6 +710,13 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: Column(
+                    children: [
             TextField(
               controller: _companyController,
               decoration: InputDecoration(
@@ -733,6 +739,19 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
+            ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    children: [
+                      _buildLogoPreview(),
+                    ],
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
             TextField(
