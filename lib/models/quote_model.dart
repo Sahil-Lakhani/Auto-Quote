@@ -17,11 +17,15 @@ class QuoteItem {
 class QuoteRoomType {
   final String title;
   final List<QuoteItem> items;
+  final double roomTotal;
 
   QuoteRoomType({
     required this.title,
     required this.items,
+    required this.roomTotal,
   });
+
+  double get total => items.fold(0.0, (sum, item) => sum + item.totalPrice);
 }
 
 class Quote {
@@ -31,6 +35,12 @@ class Quote {
   final String clientName;
   final DateTime date;
   final List<QuoteRoomType> sections;
+  final int transportCharges;
+  final int laborCharges;
+  final double subtotal;
+  final double cgst;
+  final double sgst;
+  final double grandTotal;
 
   Quote({
     required this.companyName,
@@ -39,5 +49,11 @@ class Quote {
     required this.clientName,
     required this.date,
     required this.sections,
+    required this.transportCharges,
+    required this.laborCharges,
+    required this.subtotal,
+    required this.cgst,
+    required this.sgst,
+    required this.grandTotal,
   });
 }
