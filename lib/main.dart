@@ -100,6 +100,7 @@ class _MainScreenState extends State<MainScreen> {
               totalPrice: 76000,
             ),
           ],
+          roomTotal: 1000,
         ),
         QuoteRoomType(
           title: 'Other',
@@ -117,8 +118,15 @@ class _MainScreenState extends State<MainScreen> {
               totalPrice: 7200,
             ),
           ],
+          roomTotal: 1000,
         ),
       ],
+      transportCharges: 100,
+      laborCharges: 100,
+      subtotal: 1000,
+      cgst: 800,
+      sgst: 800,
+      grandTotal: 1800,
     );
   }
 

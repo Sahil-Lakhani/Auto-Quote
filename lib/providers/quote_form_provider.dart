@@ -9,6 +9,25 @@ class QuoteFormProvider extends ChangeNotifier {
   String date = '';
   List<QuoteRoomType> rooms = [];
   Map<int, int> itemQuantities = {};
+  int transportCharges = 0;
+  int laborCharges = 0; 
+
+  // Calculate room total (excluding transport and labor)
+  double get roomTotal => rooms.fold(
+      0.0,
+      (sum, room) =>
+          sum +
+          room.items.fold(0.0, (itemSum, item) => itemSum + item.totalPrice));
+
+  // Calculate subtotal (including transport and labor, before GST)
+  double get subtotal => roomTotal + transportCharges + laborCharges;
+
+  // Calculate GST components based on room total only
+  double get cgst => roomTotal * 0.09;
+  double get sgst => roomTotal * 0.09;
+
+  // Calculate grand total (room total with GST + transport + labor)
+  double get grandTotal => (roomTotal * 1.18) + transportCharges + laborCharges;
 
   void updateCompanyName(String value) {
     companyName = value;
@@ -33,6 +52,26 @@ class QuoteFormProvider extends ChangeNotifier {
   void updateDate(String value) {
     date = value;
     notifyListeners();
+  }
+
+  void updateTransportCharges(String value) {
+    try {
+      transportCharges = int.tryParse(value) ?? 0; // Changed to int.tryParse
+      notifyListeners();
+    } catch (e) {
+      transportCharges = 0;
+      notifyListeners();
+    }
+  }
+
+  void updateLaborCharges(String value) {
+    try {
+      laborCharges = int.tryParse(value) ?? 0; // Changed to int.tryParse
+      notifyListeners();
+    } catch (e) {
+      laborCharges = 0;
+      notifyListeners();
+    }
   }
 
   void addRoom(QuoteRoomType room) {
@@ -68,6 +107,8 @@ class QuoteFormProvider extends ChangeNotifier {
     date = '';
     rooms.clear();
     itemQuantities.clear();
+    transportCharges = 0;
+    laborCharges = 0;
     notifyListeners();
   }
 }
