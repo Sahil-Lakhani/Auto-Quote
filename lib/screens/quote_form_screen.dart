@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:auto_quote/models/product_model.dart';
 import 'package:auto_quote/models/quote_model.dart';
 import 'package:auto_quote/providers/quote_form_provider.dart';
@@ -7,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart'; // Import the intl package
 
 class QuoteFormScreen extends StatefulWidget {
   const QuoteFormScreen({super.key});
@@ -650,15 +653,22 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
 
   Quote _createQuote() {
     final provider = context.read<QuoteFormProvider>();
+    Uint8List? logoBytes;
+
+    if (provider.logoFile != null) {
+      logoBytes = provider.logoFile!.readAsBytesSync();
+    }
+    
     return Quote(
       companyName: provider.companyName,
       address: provider.address,
+      logoBytes: logoBytes,
       phone: provider.phone,
       clientName: provider.customerName,
       transportCharges: provider.transportCharges,
       laborCharges: provider.laborCharges,
       date: provider.date.isNotEmpty
-          ? DateTime.parse(provider.date)
+          ? DateFormat('dd/MM/yyyy').parse(provider.date)
           : DateTime.now(),
       sections: provider.rooms,
       subtotal: provider.subtotal,

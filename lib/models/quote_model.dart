@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 class QuoteItem {
   final String description;
   final String? dimensions;
@@ -31,6 +33,7 @@ class QuoteRoomType {
 class Quote {
   final String companyName;
   final String address;
+  final Uint8List? logoBytes;
   final String phone;
   final String clientName;
   final DateTime date;
@@ -45,6 +48,7 @@ class Quote {
   Quote({
     required this.companyName,
     required this.address,
+    this.logoBytes,
     required this.phone,
     required this.clientName,
     required this.date,
