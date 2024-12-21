@@ -41,6 +41,16 @@ class PdfService {
                 fontWeight: pw.FontWeight.bold,
               ),
             ),
+            if (quote.logoBytes != null)
+              pw.Container(
+                width: 300,
+                height: 100,
+                child: pw.Image(
+                  pw.MemoryImage(quote.logoBytes!),
+                  fit: pw.BoxFit.contain,
+                ),
+              )
+            else
             pw.Container(
               width: 100,
               height: 50,
