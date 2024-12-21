@@ -5,6 +5,8 @@ import 'package:auto_quote/screens/quote_preview_screen.dart';
 import 'package:auto_quote/services/firebase_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 
 class QuoteFormScreen extends StatefulWidget {
   const QuoteFormScreen({super.key});
@@ -25,7 +27,9 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
 
   final FirebaseService _firebaseService = FirebaseService();
   final Map<int, Product?> _selectedProducts = {};
-  Set<int> _roomsInAddMode = {}; // Track which rooms are in add mode
+  final Set<int> _roomsInAddMode = {};
+  final ImagePicker _picker = ImagePicker();
+  File? _logoFile;
 
   @override
   void initState() {
@@ -115,6 +119,99 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
         _roomsInAddMode.add(roomIndex);
       }
     });
+  }
+
+  Future<void> _pickLogo() async {
+    try {
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 512, // Limit image size for preview
+        maxHeight: 512,
+      );
+
+      if (image == null) return;
+
+      setState(() {
+        _logoFile = File(image.path);
+      });
+
+      // Show success message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Logo added successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error adding logo: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Widget _buildLogoPreview() {
+    return Container(
+      height: 128,
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: _logoFile != null
+          ? Stack(
+              fit: StackFit.expand,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.file(
+                    _logoFile!,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                Positioned(
+                  top: 4,
+                  right: 4,
+                  child: Container(
+                    width: 34, 
+                    height: 34, 
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.6),
+                      border: Border.all(color: Colors.white, width: 1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.close,
+                        color: Colors.white,
+                        size: 16, 
+                      ),
+                      padding: EdgeInsets.zero, 
+                      constraints:
+                          const BoxConstraints(), 
+                      onPressed: () {
+                        setState(() {
+                          _logoFile = null;
+                        });
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            )
+          : Center(
+              child: TextButton.icon(
+                onPressed: _pickLogo,
+                icon: const Icon(Icons.add_photo_alternate),
+                label: const Text('Add Logo'),
+              ),
+            ),
+    );
   }
 
   Widget _buildRoomsList() {
@@ -556,11 +653,11 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
     final provider = context.read<QuoteFormProvider>();
     return Quote(
       companyName: provider.companyName,
-      transportCharges: provider.transportCharges,
-      laborCharges: provider.laborCharges,
       address: provider.address,
       phone: provider.phone,
       clientName: provider.customerName,
+      transportCharges: provider.transportCharges,
+      laborCharges: provider.laborCharges,
       date: provider.date.isNotEmpty
           ? DateTime.parse(provider.date)
           : DateTime.now(),
