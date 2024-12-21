@@ -20,6 +20,8 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
   final _customerController = TextEditingController();
   final _dateController = TextEditingController();
   final _roomTypeController = TextEditingController();
+  final _transportController = TextEditingController();
+  final _labourController = TextEditingController();
 
   final FirebaseService _firebaseService = FirebaseService();
   final Map<int, Product?> _selectedProducts = {};
@@ -35,6 +37,8 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
       _phoneController.text = provider.phone;
       _customerController.text = provider.customerName;
       _dateController.text = provider.date;
+      _transportController.text = provider.transportCharges.toString();
+      _labourController.text = provider.laborCharges.toString();
 
       // Setup listeners
       _companyController.addListener(() {
@@ -52,6 +56,12 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
       _dateController.addListener(() {
         provider.updateDate(_dateController.text);
       });
+      _transportController.addListener(() {
+        provider.updateTransportCharges(_transportController.text);
+      });
+      _labourController.addListener(() {
+        provider.updateLaborCharges(_labourController.text);
+      });
     });
   }
 
@@ -63,6 +73,8 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
     _customerController.dispose();
     _dateController.dispose();
     _roomTypeController.dispose();
+    _transportController.dispose();
+    _labourController.dispose();
     super.dispose();
   }
 
@@ -72,6 +84,7 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
     provider.addRoom(QuoteRoomType(
         title: _roomTypeController.text,
         items: [],
+      roomTotal: provider.roomTotal,
       ));
       _roomTypeController.clear();
   }
@@ -157,8 +170,9 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                   itemBuilder: (context, itemIndex) {
                     final item = room.items[itemIndex];
                     return Padding(
-                            padding:
-                                const EdgeInsets.only(left: 15,),
+                            padding: const EdgeInsets.only(
+                              left: 15,
+                            ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.start,
@@ -430,9 +444,83 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
           ),
         );
       }).toList(),
-            if (provider.rooms.isNotEmpty)
               Card(
                 margin: const EdgeInsets.only(top: 16),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Subtotal:',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    Text(
+                      '₹${provider.subtotal.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Card(
+              margin: const EdgeInsets.only(top: 8),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'CGST (9%)',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    Text(
+                      '₹${provider.cgst.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Card(
+              margin: const EdgeInsets.only(top: 8),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'SGST (9%)',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    Text(
+                      '₹${provider.sgst.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Card(
+              margin: const EdgeInsets.only(top: 8),
                 color: Colors.blue[50],
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -447,7 +535,7 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                         ),
                       ),
                       Text(
-                        '₹${grandTotal.toStringAsFixed(2)}',
+                      '₹${provider.grandTotal.toStringAsFixed(2)}',
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 18,
@@ -468,6 +556,8 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
     final provider = context.read<QuoteFormProvider>();
     return Quote(
       companyName: provider.companyName,
+      transportCharges: provider.transportCharges,
+      laborCharges: provider.laborCharges,
       address: provider.address,
       phone: provider.phone,
       clientName: provider.customerName,
@@ -475,6 +565,10 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
           ? DateTime.parse(provider.date)
           : DateTime.now(),
       sections: provider.rooms,
+      subtotal: provider.subtotal,
+      cgst: provider.cgst,
+      sgst: provider.sgst,
+      grandTotal: provider.grandTotal,
     );
   }
 
@@ -486,10 +580,12 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
       lastDate: DateTime(2100),
     );
     if (picked != null) {
-      setState(() {
         final provider = context.read<QuoteFormProvider>();
-        provider.updateDate(picked.toIso8601String().split('T')[0]);
-      });
+      // Format the date as dd/MM/yyyy
+      final formattedDate =
+          "${picked.day.toString().padLeft(2, '0')}/${picked.month.toString().padLeft(2, '0')}/${picked.year}";
+      _dateController.text = formattedDate;
+      provider.updateDate(formattedDate);
     }
   }
 
@@ -583,6 +679,40 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                     ),
                     readOnly: true,
                     onTap: () => _selectDate(context),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _transportController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      label: const Text('Transport Charges'),
+                      hintText: '₹0',
+                      prefixIcon: const Icon(Icons.local_shipping_outlined),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: TextField(
+                    controller: _labourController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      label: const Text('Labour Charges'),
+                      hintText: '₹0',
+                      prefixIcon: const Icon(Icons.engineering_outlined),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
                   ),
                 ),
               ],
