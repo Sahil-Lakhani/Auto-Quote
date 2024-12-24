@@ -5,6 +5,7 @@ import 'models/quote_model.dart';
 import 'screens/quote_preview_screen.dart';
 import 'screens/quote_form_screen.dart';
 import 'screens/product_form_screen.dart';
+import 'screens/template_selection_screen.dart';
 import 'package:auto_quote/providers/quote_form_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -52,7 +53,7 @@ class _MainScreenState extends State<MainScreen> {
   static final List<Widget> _screens = [
     const QuoteFormScreen(),
     const ProductFormScreen(),
-    QuotePreviewScreen(quote: _getSampleQuote()),
+    const TemplateSelectionScreen(),
   ];
 
   static Quote _getSampleQuote() {
@@ -151,8 +152,8 @@ class _MainScreenState extends State<MainScreen> {
             label: 'Items',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.picture_as_pdf),
-            label: 'Preview',
+            icon: Icon(Icons.dashboard_customize),
+            label: 'Templates',
           ),
         ],
         currentIndex: _selectedIndex,
