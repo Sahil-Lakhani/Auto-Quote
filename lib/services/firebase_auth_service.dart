@@ -1,9 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'firestore_service.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final FirestoreService _firestoreService = FirestoreService();
 
   // Stream to listen to auth state changes
   Stream<User?> get authStateChanges => _auth.authStateChanges();
@@ -30,7 +32,18 @@ class AuthService {
       );
 
       // Sign in to Firebase with the credential
-      return await _auth.signInWithCredential(credential);
+      final userCredential = await _auth.signInWithCredential(credential);
+      
+      // Save user data to Firestore
+      if (userCredential.user != null) {
+        await _firestoreService.saveUser(
+          userCredential.user!.uid,
+          userCredential.user!.email!,
+          userCredential.user!.displayName,
+        );
+      }
+
+      return userCredential;
     } catch (e) {
       print('Error signing in with Google: $e');
       rethrow;
@@ -46,6 +59,16 @@ class AuthService {
       ]);
     } catch (e) {
       print('Error signing out: $e');
+      rethrow;
+    }
+  }
+    Future<Map<String, dynamic>?> getCurrentUserData() async {
+    try {
+      final user = currentUser;
+      if (user == null) return null;
+      return await _firestoreService.getUser(user.uid);
+    } catch (e) {
+      print('Error getting current user data: $e');
       rethrow;
     }
   }
