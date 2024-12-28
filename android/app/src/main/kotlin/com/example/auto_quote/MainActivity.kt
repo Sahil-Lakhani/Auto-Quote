@@ -1,4 +1,4 @@
-package com.example.auto_quote
+package com.instaQuote.app
 
 import io.flutter.embedding.android.FlutterActivity
 

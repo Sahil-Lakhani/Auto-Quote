@@ -7,7 +7,7 @@
         android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <application
-        android:label="InstaQuote"
+        android:label="auto_quote"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
