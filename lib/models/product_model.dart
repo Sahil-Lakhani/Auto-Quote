@@ -34,6 +34,7 @@ class Dimension {
 
 class Product {
   final String? id;
+  final String? userId;
   final String name;
   final double pricePerUnit;
   final Dimension? height;
@@ -44,6 +45,7 @@ class Product {
 
   Product({
     this.id,
+    this.userId,
     required this.name,
     required this.pricePerUnit,
     this.height,
@@ -55,6 +57,7 @@ class Product {
 
   Map<String, dynamic> toMap() {
     return {
+      if (userId != null) 'userId': userId,  
       'name': name,
       'pricePerUnit': pricePerUnit,
       'dimensions': {
@@ -73,6 +76,7 @@ class Product {
     
     return Product(
       id: doc.id,
+      userId: data['userId'] ?? '',
       name: data['name'] ?? '',
       pricePerUnit: (data['pricePerUnit'] ?? 0).toDouble(),
       height: dimensions['height'] != null ? Dimension.fromMap(dimensions['height']) : null,
@@ -80,6 +84,23 @@ class Product {
       depth: dimensions['depth'] != null ? Dimension.fromMap(dimensions['depth']) : null,
       other: data['other'],
       createdAt: (data['createdAt'] as Timestamp).toDate(),
+    );
+  }
+
+  // Add fromMap factory constructor
+  factory Product.fromMap(Map<String, dynamic> map, String docId) {
+    Map<String, dynamic> dimensions = map['dimensions'] ?? {};
+    
+    return Product(
+      id: docId,
+      userId: map['userId'] ?? '',
+      name: map['name'] ?? '',
+      pricePerUnit: (map['pricePerUnit'] ?? 0).toDouble(),
+      height: dimensions['height'] != null ? Dimension.fromMap(dimensions['height']) : null,
+      width: dimensions['width'] != null ? Dimension.fromMap(dimensions['width']) : null,
+      depth: dimensions['depth'] != null ? Dimension.fromMap(dimensions['depth']) : null,
+      other: map['other'],
+      createdAt: (map['createdAt'] as Timestamp).toDate(),
     );
   }
 

@@ -1,6 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/product_model.dart';
+import '../services/firestore_service.dart';
 
 class ProductForm extends StatefulWidget {
   final Product? product;
@@ -27,6 +29,7 @@ class _ProductFormState extends State<ProductForm> {
   final _depthFeetController = TextEditingController();
   final _depthInchesController = TextEditingController();
   final _otherController = TextEditingController();
+  final _firestoreService = FirestoreService();
   int _currentStep = 0;
 
   @override
