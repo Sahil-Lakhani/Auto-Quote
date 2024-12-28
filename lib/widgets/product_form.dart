@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/product_model.dart';
-import '../services/firestore_service.dart';
+// import '../services/firestore_service.dart';
 
 class ProductForm extends StatefulWidget {
   final Product? product;
@@ -29,7 +29,7 @@ class _ProductFormState extends State<ProductForm> {
   final _depthFeetController = TextEditingController();
   final _depthInchesController = TextEditingController();
   final _otherController = TextEditingController();
-  final _firestoreService = FirestoreService();
+  // final _firestoreService = FirestoreService();
   int _currentStep = 0;
 
   @override
@@ -91,7 +91,11 @@ class _ProductFormState extends State<ProductForm> {
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 maxLength: 2,
-                buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null,
+                buildCounter: (context,
+                        {required currentLength,
+                        required isFocused,
+                        maxLength}) =>
+                    null,
               ),
             ),
             const SizedBox(width: 8),
@@ -106,7 +110,11 @@ class _ProductFormState extends State<ProductForm> {
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 maxLength: 2,
-                buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null,
+                buildCounter: (context,
+                        {required currentLength,
+                        required isFocused,
+                        maxLength}) =>
+                    null,
                 validator: (value) {
                   if (value != null && value.isNotEmpty) {
                     final inches = int.tryParse(value);
@@ -150,10 +158,24 @@ class _ProductFormState extends State<ProductForm> {
     }
   }
 
-  void _handleSave() {
+Future<void> _handleSave() async {
     if (_formKey.currentState!.validate()) {
+      // Get the current user
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        // Handle the case where user is not logged in
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('You must be logged in to save products'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
       final newProduct = Product(
         id: widget.product?.id,
+        userId: user.uid, // Add the user ID here
         name: _nameController.text,
         pricePerUnit: double.parse(_priceController.text),
         height: _getDimension(_heightFeetController, _heightInchesController),
@@ -162,7 +184,18 @@ class _ProductFormState extends State<ProductForm> {
         other: _otherController.text.isNotEmpty ? _otherController.text : null,
       );
 
-      widget.onSave(newProduct);
+      try {
+        await widget.onSave(newProduct);
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error saving product: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     }
   }
 
@@ -220,11 +253,14 @@ class _ProductFormState extends State<ProductForm> {
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 24),
-        _buildDimensionFields('Height', _heightFeetController, _heightInchesController),
+        _buildDimensionFields(
+            'Height', _heightFeetController, _heightInchesController),
         const SizedBox(height: 16),
-        _buildDimensionFields('Width', _widthFeetController, _widthInchesController),
+        _buildDimensionFields(
+            'Width', _widthFeetController, _widthInchesController),
         const SizedBox(height: 16),
-        _buildDimensionFields('Depth', _depthFeetController, _depthInchesController),
+        _buildDimensionFields(
+            'Depth', _depthFeetController, _depthInchesController),
       ],
     );
   }
