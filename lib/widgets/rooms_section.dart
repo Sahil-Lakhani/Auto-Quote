@@ -40,70 +40,6 @@ class _RoomsSectionState extends State<RoomsSection> {
     return items.fold(0.0, (sum, item) => sum + item.totalPrice);
   }
 
-  Widget _buildItemList(QuoteRoomType room, int roomIndex) {
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: room.items.length,
-      itemBuilder: (context, itemIndex) {
-        final item = room.items[itemIndex];
-        return Padding(
-          padding: const EdgeInsets.only(left: 15),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    item.description,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () => _removeItem(roomIndex, itemIndex),
-                  ),
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (item.dimensions != null) Text(item.dimensions!),
-                      Text('Price: ₹${item.unitPrice}'),
-                      Text('Quantity: ${item.quantity}'),
-                    ],
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 15),
-                    child: Text(
-                      '₹${item.totalPrice}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              Divider(
-                height: 25,
-                color: Colors.grey[500],
-                indent: 2,
-                endIndent: 15,
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   Widget _buildAddItemSection(int roomIndex) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -141,27 +77,40 @@ class _RoomsSectionState extends State<RoomsSection> {
                               );
                               setState(() {
                                 _selectedProducts[roomIndex] = selectedProduct;
-                                context.read<QuoteFormProvider>().updateItemQuantity(
+                                context
+                                    .read<QuoteFormProvider>()
+                                    .updateItemQuantity(
                                     roomIndex,
-                                    context.read<QuoteFormProvider>().itemQuantities[roomIndex] ?? 1);
+                                        context
+                                                .read<QuoteFormProvider>()
+                                                .itemQuantities[roomIndex] ??
+                                            1);
                               });
                             }
                           },
                         ),
                       ),
-                      if (_selectedProducts[roomIndex] != null) ...[
-                        const SizedBox(width: 16),
-                        Row(
-                          children: [
                             IconButton(
                               icon: const Icon(Icons.remove),
-                              onPressed: context.read<QuoteFormProvider>().itemQuantities[roomIndex] == null ||
-                                      context.read<QuoteFormProvider>().itemQuantities[roomIndex]! <= 1
+                        onPressed: context
+                                        .read<QuoteFormProvider>()
+                                        .itemQuantities[roomIndex] ==
+                                    null ||
+                                context
+                                        .read<QuoteFormProvider>()
+                                        .itemQuantities[roomIndex]! <=
+                                    1
                                   ? null
                                   : () {
-                                      context.read<QuoteFormProvider>().updateItemQuantity(
+                                context
+                                    .read<QuoteFormProvider>()
+                                    .updateItemQuantity(
                                           roomIndex,
-                                          (context.read<QuoteFormProvider>().itemQuantities[roomIndex] ?? 1) - 1);
+                                        (context
+                                                    .read<QuoteFormProvider>()
+                                                    .itemQuantities[roomIndex] ??
+                                                1) -
+                                            1);
                                     },
                             ),
                             Text(
@@ -173,45 +122,64 @@ class _RoomsSectionState extends State<RoomsSection> {
                               onPressed: () {
                                 context.read<QuoteFormProvider>().updateItemQuantity(
                                     roomIndex,
-                                    (context.read<QuoteFormProvider>().itemQuantities[roomIndex] ?? 1) + 1);
+                              (context
+                                          .read<QuoteFormProvider>()
+                                          .itemQuantities[roomIndex] ??
+                                      1) +
+                                  1);
                               },
                             ),
                           ],
                         ),
-                      ],
-                    ],
-                  ),
-                  if (_selectedProducts[roomIndex] != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 16.0),
-                      child: ElevatedButton(
-                        onPressed: () {
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ElevatedButton(
+                        onPressed: _selectedProducts[roomIndex] == null
+                            ? null
+                            : () {
                           final product = _selectedProducts[roomIndex]!;
-                          final quantity = context.read<QuoteFormProvider>().itemQuantities[roomIndex] ?? 1;
-
-                          final dimensions = [
-                            if (product.height != null) 'H: ${product.height!.formatted}',
-                            if (product.width != null) 'W: ${product.width!.formatted}',
-                            if (product.depth != null) 'D: ${product.depth!.formatted}',
-                          ].join(' × ');
+                                final quantity = context
+                                        .read<QuoteFormProvider>()
+                                        .itemQuantities[roomIndex] ??
+                                    1;
 
                           final item = QuoteItem(
                             description: product.name,
-                            dimensions: dimensions.isNotEmpty ? dimensions : null,
+                                  dimensions: [
+                                    if (product.height != null)
+                                      'H: ${product.height!.formatted}',
+                                    if (product.width != null)
+                                      'W: ${product.width!.formatted}',
+                                    if (product.depth != null)
+                                      'D: ${product.depth!.formatted}',
+                                  ].join(' × '),
+                                  quantity: quantity.toInt(),
                             unitPrice: product.pricePerUnit,
-                            quantity: quantity,
                             totalPrice: product.pricePerUnit * quantity,
                           );
 
-                          context.read<QuoteFormProvider>().addItemToRoom(roomIndex, item);
+                                context
+                                    .read<QuoteFormProvider>()
+                                    .addItemToRoom(roomIndex, item);
                           setState(() {
                             _selectedProducts.remove(roomIndex);
                             _roomsInAddMode.remove(roomIndex);
                           });
-                          context.read<QuoteFormProvider>().itemQuantities.remove(roomIndex);
+                                context
+                                    .read<QuoteFormProvider>()
+                                    .itemQuantities
+                                    .remove(roomIndex);
                         },
                         child: const Text('Add'),
                       ),
+                      const SizedBox(width: 16),
+                      OutlinedButton(
+                        onPressed: () => _toggleAddMode(roomIndex),
+                        child: const Text('Cancel'),
+                      ),
+                    ],
                     ),
                 ],
               );
@@ -227,16 +195,20 @@ class _RoomsSectionState extends State<RoomsSection> {
     return Consumer<QuoteFormProvider>(
       builder: (context, provider, child) {
         return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             ...provider.rooms.asMap().entries.map((entry) {
               final index = entry.key;
               final room = entry.value;
+              final roomTotal = _calculateRoomTotal(room.items);
               final isInAddMode = _roomsInAddMode.contains(index);
 
               return Card(
                 margin: const EdgeInsets.only(bottom: 5),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     Padding(
                       padding: const EdgeInsets.all(15),
@@ -250,30 +222,238 @@ class _RoomsSectionState extends State<RoomsSection> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          Row(
-                            children: [
-                              IconButton(
-                                icon: Icon(
-                                  isInAddMode ? Icons.remove : Icons.add,
-                                  color: Colors.blue,
-                                ),
-                                onPressed: () => _toggleAddMode(index),
-                              ),
                               IconButton(
                                 icon: const Icon(Icons.delete, color: Colors.red),
                                 onPressed: () => _removeRoom(index),
                               ),
                             ],
                           ),
-                        ],
-                      ),
                     ),
-                    if (room.items.isNotEmpty) _buildItemList(room, index),
+                    Divider(
+                      color: Colors.grey[300],
+                      thickness: 1,
+                      height: 1,
+                    ),
+                    if (room.items.isNotEmpty)
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: room.items.length,
+                        itemBuilder: (context, itemIndex) {
+                          final item = room.items[itemIndex];
+                          return Padding(
+                            padding: const EdgeInsets.only(left: 15),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      item.description,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete,
+                                          color: Colors.red),
+                                      onPressed: () =>
+                                          _removeItem(index, itemIndex),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      children: [
+                                        if (item.dimensions != null)
+                                          Text(item.dimensions!),
+                                        Text('Price: ₹${item.unitPrice}'),
+                                        Text('Quantity: ${item.quantity}'),
+                                      ],
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(right: 15),
+                                      child: Text(
+                                        '₹${item.totalPrice}',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Divider(
+                                  height: 25,
+                                  color: Colors.grey[500],
+                                  indent: 2,
+                                  endIndent: 15,
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
                     if (isInAddMode) _buildAddItemSection(index),
+                    if (!isInAddMode)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 10, top: 8),
+                        child: Center(
+                          child: ElevatedButton.icon(
+                            onPressed: () => _toggleAddMode(index),
+                            icon: const Icon(Icons.add),
+                            label: const Text('Add Item'),
+                          ),
+                        ),
+                      ),
+                    if (room.items.isNotEmpty)
+                      Container(
+                        padding: const EdgeInsets.all(15),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[100],
+                          border: Border(
+                            top: BorderSide(color: Colors.grey[300]!),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Room Total:',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            Text(
+                              '₹${roomTotal.toStringAsFixed(2)}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                   ],
                 ),
               );
             }).toList(),
+            Card(
+              margin: const EdgeInsets.only(top: 16),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Subtotal:',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    Text(
+                      '₹${provider.subtotal.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Card(
+              margin: const EdgeInsets.only(top: 8),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'CGST (9%)',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    Text(
+                      '₹${provider.cgst.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Card(
+              margin: const EdgeInsets.only(top: 8),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'SGST (9%)',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    Text(
+                      '₹${provider.sgst.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Card(
+              margin: const EdgeInsets.only(top: 8),
+              color: Colors.blue[50],
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Grand Total:',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                    Text(
+                      '₹${provider.grandTotal.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: Colors.blue,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ],
         );
       },
