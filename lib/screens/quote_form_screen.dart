@@ -1,10 +1,10 @@
 import 'dart:typed_data';
 
-import 'package:auto_quote/models/product_model.dart';
+// import 'package:auto_quote/models/product_model.dart';
 import 'package:auto_quote/models/quote_model.dart';
 import 'package:auto_quote/providers/quote_form_provider.dart';
 import 'package:auto_quote/screens/quote_preview_screen.dart';
-import 'package:auto_quote/services/firebase_service.dart';
+// import 'package:auto_quote/services/firebase_service.dart';
 import 'package:auto_quote/widgets/company_info_section.dart';
 import 'package:auto_quote/widgets/customer_info_section.dart';
 import 'package:auto_quote/widgets/charges_section.dart';
@@ -32,11 +32,12 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
   final _transportController = TextEditingController();
   final _labourController = TextEditingController();
 
-  final FirebaseService _firebaseService = FirebaseService();
-  final Map<int, Product?> _selectedProducts = {};
-  final Set<int> _roomsInAddMode = {};
+  // final FirebaseService _firebaseService = FirebaseService();
+  // final Map<int, Product?> _selectedProducts = {};
+  // final Set<int> _roomsInAddMode = {};
   final ImagePicker _picker = ImagePicker();
-  File? _logoFile;
+  // File? _logoFile;
+  
 
   @override
   void initState() {
@@ -100,34 +101,6 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
       _roomTypeController.clear();
   }
 
-  void _removeRoom(int index) {
-    context.read<QuoteFormProvider>().removeRoom(index);
-  }
-
-  void _removeItem(int roomIndex, int itemIndex) {
-    context.read<QuoteFormProvider>().removeItemFromRoom(roomIndex, itemIndex);
-  }
-
-  double _calculateRoomTotal(List<QuoteItem> items) {
-    return items.fold(0.0, (sum, item) => sum + item.totalPrice);
-  }
-
-  double _calculateGrandTotal(List<QuoteRoomType> rooms) {
-    return rooms.fold(
-        0.0, (sum, room) => sum + _calculateRoomTotal(room.items));
-  }
-
-  void _toggleAddMode(int roomIndex) {
-    setState(() {
-      if (_roomsInAddMode.contains(roomIndex)) {
-        _roomsInAddMode.remove(roomIndex);
-        _selectedProducts.remove(roomIndex);
-      } else {
-        _roomsInAddMode.add(roomIndex);
-      }
-    });
-  }
-
   Future<void> _pickLogo() async {
     try {
       final XFile? image = await _picker.pickImage(
@@ -160,6 +133,8 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
       }
     }
   }
+
+  
 
   Widget _buildLogoPreview() {
     return Consumer<QuoteFormProvider>(
@@ -347,7 +322,17 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                 labourController: _labourController,
             ),
             const SizedBox(height: 16),
-              Consumer<QuoteFormProvider>(
+              _buildSummary(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+
+  Widget _buildSummary() {
+    return Consumer<QuoteFormProvider>(
                 builder: (context, provider, child) {
                   return Card(
                     child: Padding(
@@ -355,6 +340,9 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
             const Text(
                             'Summary',
               style: TextStyle(
@@ -362,24 +350,34 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                 fontWeight: FontWeight.bold,
               ),
             ),
+                    Row(
+                      children: [
+                        const Text('GST'),
+                        const SizedBox(width: 8),
+                        Switch(
+                          value: provider.isGstEnabled,
+                          onChanged: (value) => provider.toggleGst(value),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
             const SizedBox(height: 16),
                           _buildSummaryRow('Subtotal', provider.subtotal),
+                if (provider.isGstEnabled) ...[
                           const SizedBox(height: 8),
                           _buildSummaryRow('CGST (9%)', provider.cgst),
                           const SizedBox(height: 8),
                           _buildSummaryRow('SGST (9%)', provider.sgst),
+                ],
                           const Divider(),
-                          _buildSummaryRow('Grand Total', provider.grandTotal, isTotal: true),
+                _buildSummaryRow('Grand Total', provider.grandTotal,
+                    isTotal: true),
                         ],
                     ),
                   ),
                   );
                 },
-                ),
-              ],
-            ),
-        ),
-      ),
     );
   }
 

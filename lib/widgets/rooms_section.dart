@@ -352,108 +352,108 @@ class _RoomsSectionState extends State<RoomsSection> {
                 ),
               );
             }).toList(),
-            Card(
-              margin: const EdgeInsets.only(top: 16),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Subtotal:',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    Text(
-                      '₹${provider.subtotal.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Card(
-              margin: const EdgeInsets.only(top: 8),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'CGST (9%)',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    Text(
-                      '₹${provider.cgst.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Card(
-              margin: const EdgeInsets.only(top: 8),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'SGST (9%)',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    Text(
-                      '₹${provider.sgst.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Card(
-              margin: const EdgeInsets.only(top: 8),
-              color: Colors.blue[50],
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Grand Total:',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
-                    Text(
-                      '₹${provider.grandTotal.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                        color: Colors.blue,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            // Card(
+            //   margin: const EdgeInsets.only(top: 16),
+            //   child: Padding(
+            //     padding: const EdgeInsets.all(16),
+            //     child: Row(
+            //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //       children: [
+            //         const Text(
+            //           'Subtotal:',
+            //           style: TextStyle(
+            //             fontWeight: FontWeight.bold,
+            //             fontSize: 16,
+            //           ),
+            //         ),
+            //         Text(
+            //           '₹${provider.subtotal.toStringAsFixed(2)}',
+            //           style: const TextStyle(
+            //             fontWeight: FontWeight.bold,
+            //             fontSize: 16,
+            //           ),
+            //         ),
+            //       ],
+            //     ),
+            //   ),
+            // ),
+            // Card(
+            //   margin: const EdgeInsets.only(top: 8),
+            //   child: Padding(
+            //     padding: const EdgeInsets.all(16),
+            //     child: Row(
+            //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //       children: [
+            //         const Text(
+            //           'CGST (9%)',
+            //           style: TextStyle(
+            //             fontWeight: FontWeight.bold,
+            //             fontSize: 16,
+            //           ),
+            //         ),
+            //         Text(
+            //           '₹${provider.cgst.toStringAsFixed(2)}',
+            //           style: const TextStyle(
+            //             fontWeight: FontWeight.bold,
+            //             fontSize: 16,
+            //           ),
+            //         ),
+            //       ],
+            //     ),
+            //   ),
+            // ),
+            // Card(
+            //   margin: const EdgeInsets.only(top: 8),
+            //   child: Padding(
+            //     padding: const EdgeInsets.all(16),
+            //     child: Row(
+            //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //       children: [
+            //         const Text(
+            //           'SGST (9%)',
+            //           style: TextStyle(
+            //             fontWeight: FontWeight.bold,
+            //             fontSize: 16,
+            //           ),
+            //         ),
+            //         Text(
+            //           '₹${provider.sgst.toStringAsFixed(2)}',
+            //           style: const TextStyle(
+            //             fontWeight: FontWeight.bold,
+            //             fontSize: 16,
+            //           ),
+            //         ),
+            //       ],
+            //     ),
+            //   ),
+            // ),
+            // Card(
+            //   margin: const EdgeInsets.only(top: 8),
+            //   color: Colors.blue[50],
+            //   child: Padding(
+            //     padding: const EdgeInsets.all(16),
+            //     child: Row(
+            //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //       children: [
+            //         const Text(
+            //           'Grand Total:',
+            //           style: TextStyle(
+            //             fontWeight: FontWeight.bold,
+            //             fontSize: 18,
+            //           ),
+            //         ),
+            //         Text(
+            //           '₹${provider.grandTotal.toStringAsFixed(2)}',
+            //           style: const TextStyle(
+            //             fontWeight: FontWeight.bold,
+            //             fontSize: 18,
+            //             color: Colors.blue,
+            //           ),
+            //         ),
+            //       ],
+            //     ),
+            //   ),
+            // ),
           ],
         );
       },

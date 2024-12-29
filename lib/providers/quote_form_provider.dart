@@ -15,6 +15,15 @@ class QuoteFormProvider extends ChangeNotifier {
   int transportCharges = 0;
   int laborCharges = 0; 
 
+  bool _isGstEnabled = false; 
+
+  bool get isGstEnabled => _isGstEnabled;
+
+  void toggleGst(bool value) {
+    _isGstEnabled = value;
+    notifyListeners();
+  }
+
   // Calculate room total (excluding transport and labor)
   double get roomTotal => rooms.fold(
       0.0,
@@ -30,7 +39,14 @@ class QuoteFormProvider extends ChangeNotifier {
   double get sgst => roomTotal * 0.09;
 
   // Calculate grand total (room total with GST + transport + labor)
-  double get grandTotal => (roomTotal * 1.18) + transportCharges + laborCharges;
+  double get grandTotal {
+    if (_isGstEnabled) {
+      return subtotal + cgst + sgst;
+    } else {
+      return subtotal;
+    }
+  }
+
   File? get logoFile => _logoFile;
   void updateCompanyName(String value) {
     companyName = value;
