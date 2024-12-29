@@ -215,6 +215,7 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
           ? DateFormat('dd/MM/yyyy').parse(provider.date)
           : DateTime.now(),
       sections: provider.rooms,
+      isGstEnabled: provider.isGstEnabled,
       subtotal: provider.subtotal,
       cgst: provider.cgst,
       sgst: provider.sgst,

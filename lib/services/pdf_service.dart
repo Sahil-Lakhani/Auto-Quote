@@ -257,8 +257,11 @@ class PdfService {
       if (quote.laborCharges > 0)
         {'label': 'Labour Charges', 'amount': quote.laborCharges.toDouble()},
       {'label': 'Subtotal', 'amount': quote.subtotal},
-      {'label': 'CGST (9%)', 'amount': quote.cgst},
-      {'label': 'SGST (9%)', 'amount': quote.sgst},
+      // Only include GST items if GST is enabled
+      if (quote.isGstEnabled) ...[
+        {'label': 'CGST (9%)', 'amount': quote.cgst},
+        {'label': 'SGST (9%)', 'amount': quote.sgst},
+      ],
     ];
 
     return pw.Container(

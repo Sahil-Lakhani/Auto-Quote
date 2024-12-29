@@ -41,6 +41,7 @@ class Quote {
   final int transportCharges;
   final int laborCharges;
   final double subtotal;
+  final bool isGstEnabled;
   final double cgst;
   final double sgst;
   final double grandTotal;
@@ -56,6 +57,7 @@ class Quote {
     required this.transportCharges,
     required this.laborCharges,
     required this.subtotal,
+    required this.isGstEnabled,
     required this.cgst,
     required this.sgst,
     required this.grandTotal,
