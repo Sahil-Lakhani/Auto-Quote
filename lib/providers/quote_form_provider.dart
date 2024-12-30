@@ -9,6 +9,7 @@ class QuoteFormProvider extends ChangeNotifier {
   File? _logoFile; 
   String phone = '';
   String customerName = '';
+  String customerPhone = '';
   String date = '';
   List<QuoteRoomType> rooms = [];
   Map<int, int> itemQuantities = {};
@@ -68,6 +69,7 @@ class QuoteFormProvider extends ChangeNotifier {
     _logoFile = null;
     notifyListeners();
   }
+
   void updatePhone(String value) {
     phone = value;
     notifyListeners();
@@ -77,6 +79,12 @@ class QuoteFormProvider extends ChangeNotifier {
     customerName = value;
     notifyListeners();
   }
+
+    void updateCustomerPhone(String value) {
+    customerPhone = value;
+    notifyListeners();
+  }
+
 
   void updateDate(String value) {
     date = value;

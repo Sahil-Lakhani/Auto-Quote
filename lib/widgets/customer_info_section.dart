@@ -3,12 +3,14 @@ import 'package:intl/intl.dart';
 
 class CustomerInfoSection extends StatelessWidget {
   final TextEditingController customerController;
+  final TextEditingController phoneController;
   final TextEditingController dateController;
   final Function(BuildContext) selectDate;
 
   const CustomerInfoSection({
     super.key,
     required this.customerController,
+    required this.phoneController,
     required this.dateController,
     required this.selectDate,
   });
@@ -33,6 +35,14 @@ class CustomerInfoSection extends StatelessWidget {
               controller: customerController,
               decoration: const InputDecoration(
                 labelText: 'Customer Name',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: phoneController,
+              decoration: const InputDecoration(
+                labelText: 'Customer Number',
                 border: OutlineInputBorder(),
               ),
             ),

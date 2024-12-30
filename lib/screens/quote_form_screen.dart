@@ -27,6 +27,7 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
   final _addressController = TextEditingController();
   final _phoneController = TextEditingController();
   final _customerController = TextEditingController();
+  final _customerphoneController = TextEditingController();
   final _dateController = TextEditingController();
   final _roomTypeController = TextEditingController();
   final _transportController = TextEditingController();
@@ -48,6 +49,7 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
       _addressController.text = provider.address;
       _phoneController.text = provider.phone;
       _customerController.text = provider.customerName;
+      _customerphoneController.text = provider.customerPhone;
       _dateController.text = provider.date;
       _transportController.text = provider.transportCharges.toString();
       _labourController.text = provider.laborCharges.toString();
@@ -64,6 +66,9 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
       });
       _customerController.addListener(() {
         provider.updateCustomerName(_customerController.text);
+      });
+      _customerphoneController.addListener(() {
+        provider.updateCustomerPhone(_customerphoneController.text);
       });
       _dateController.addListener(() {
         provider.updateDate(_dateController.text);
@@ -83,6 +88,7 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
     _addressController.dispose();
     _phoneController.dispose();
     _customerController.dispose();
+    _customerphoneController.dispose();
     _dateController.dispose();
     _roomTypeController.dispose();
     _transportController.dispose();
@@ -275,6 +281,7 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
             const SizedBox(height: 16),
               CustomerInfoSection(
                 customerController: _customerController,
+                phoneController: _customerphoneController,
                 dateController: _dateController,
                 selectDate: _selectDate,
                 ),
