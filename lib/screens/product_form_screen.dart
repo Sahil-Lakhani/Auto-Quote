@@ -38,7 +38,8 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
               onSave: (newProduct) async {
                 try {
                   if (product != null) {
-                    await _firebaseService.updateProduct(product.id!, newProduct);
+                    await _firebaseService.updateProduct(
+                        product.id!, newProduct);
                   } else {
                     await _firebaseService.addProduct(newProduct);
                   }
@@ -46,7 +47,9 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(product != null ? 'Product updated successfully' : 'Product added successfully'),
+                        content: Text(product != null
+                            ? 'Product updated successfully'
+                            : 'Product added successfully'),
                         backgroundColor: Colors.green,
                       ),
                     );
@@ -78,8 +81,16 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Price: ₹${product.pricePerUnit}'),
-            if (product.height != null || product.width != null || product.depth != null)
+            if (product.type == ProductType.standalone)
+              // const Text('Standalone'),
+              Text('Price: ₹${product.price}'),
+            if (product.type == ProductType.dimensionBased)
+              // const Text('Dimension Based'),
+              Text('Price per sqft: ₹${product.price}'),
+
+            if (product.height != null ||
+                product.width != null ||
+                product.depth != null)
               Text(
                 [
                   if (product.height != null) 'H: ${product.height!.formatted}',
@@ -233,7 +244,8 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                 return ListView.builder(
                   padding: const EdgeInsets.all(16),
                   itemCount: products.length,
-                  itemBuilder: (context, index) => _buildProductItem(products[index]),
+                  itemBuilder: (context, index) =>
+                      _buildProductItem(products[index]),
                 );
               },
             ),

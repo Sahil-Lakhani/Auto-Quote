@@ -32,26 +32,32 @@ class Dimension {
   }
 }
 
+enum ProductType { dimensionBased, standalone }
+
 class Product {
   final String? id;
   final String? userId;
   final String name;
-  final double pricePerUnit;
+  final ProductType type;
+  final double price;
+  // final double pricePerUnit;
   final Dimension? height;
   final Dimension? width;
   final Dimension? depth;
-  final String? other;
+  final String? description;
   final DateTime createdAt;
 
   Product({
     this.id,
     this.userId,
     required this.name,
-    required this.pricePerUnit,
+    required this.type,
+    required this.price,
+    // required this.pricePerUnit,
     this.height,
     this.width,
     this.depth,
-    this.other,
+    this.description,
     DateTime? createdAt,
   }) : createdAt = createdAt ?? DateTime.now();
 
@@ -59,13 +65,14 @@ class Product {
     return {
       if (userId != null) 'userId': userId,  
       'name': name,
-      'pricePerUnit': pricePerUnit,
+      'type': type.toString(),
+      'price': price,
       'dimensions': {
         'height': height?.toMap(),
         'width': width?.toMap(),
         'depth': depth?.toMap(),
       },
-      'other': other,
+      'description': description,
       'createdAt': createdAt,
     };
   }
@@ -78,16 +85,23 @@ class Product {
       id: doc.id,
       userId: data['userId'] ?? '',
       name: data['name'] ?? '',
-      pricePerUnit: (data['pricePerUnit'] ?? 0).toDouble(),
-      height: dimensions['height'] != null ? Dimension.fromMap(dimensions['height']) : null,
-      width: dimensions['width'] != null ? Dimension.fromMap(dimensions['width']) : null,
-      depth: dimensions['depth'] != null ? Dimension.fromMap(dimensions['depth']) : null,
-      other: data['other'],
+      type: ProductType.values.firstWhere((e) => e.toString() == data['type'],
+          orElse: () => ProductType.dimensionBased),
+      price: (data['price'] ?? 0).toDouble(),
+      height: dimensions['height'] != null
+          ? Dimension.fromMap(dimensions['height'])
+          : null,
+      width: dimensions['width'] != null
+          ? Dimension.fromMap(dimensions['width'])
+          : null,
+      depth: dimensions['depth'] != null
+          ? Dimension.fromMap(dimensions['depth'])
+          : null,
+      description: data['description'],
       createdAt: (data['createdAt'] as Timestamp).toDate(),
     );
   }
 
-  // Add fromMap factory constructor
   factory Product.fromMap(Map<String, dynamic> map, String docId) {
     Map<String, dynamic> dimensions = map['dimensions'] ?? {};
     
@@ -95,11 +109,15 @@ class Product {
       id: docId,
       userId: map['userId'] ?? '',
       name: map['name'] ?? '',
-      pricePerUnit: (map['pricePerUnit'] ?? 0).toDouble(),
+      type: ProductType.values.firstWhere(
+        (e) => e.toString() == map['type'],
+        orElse: () => ProductType.standalone
+      ),
+      price: (map['price'] ?? 0).toDouble(),
       height: dimensions['height'] != null ? Dimension.fromMap(dimensions['height']) : null,
       width: dimensions['width'] != null ? Dimension.fromMap(dimensions['width']) : null,
       depth: dimensions['depth'] != null ? Dimension.fromMap(dimensions['depth']) : null,
-      other: map['other'],
+      description: map['description'],
       createdAt: (map['createdAt'] as Timestamp).toDate(),
     );
   }
@@ -110,9 +128,9 @@ class Product {
     return other is Product && 
         other.id == id &&
         other.name == name &&
-        other.pricePerUnit == pricePerUnit;
+        other.price == price;
   }
 
   @override
-  int get hashCode => Object.hash(id, name, pricePerUnit);
+  int get hashCode => Object.hash(id, name, price);
 }

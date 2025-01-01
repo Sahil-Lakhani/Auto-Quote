@@ -29,15 +29,17 @@ class _ProductFormState extends State<ProductForm> {
   final _depthFeetController = TextEditingController();
   final _depthInchesController = TextEditingController();
   final _otherController = TextEditingController();
+  late ProductType _selectedType;
   // final _firestoreService = FirestoreService();
   int _currentStep = 0;
 
   @override
   void initState() {
     super.initState();
+    _selectedType = widget.product?.type ?? ProductType.standalone;
     if (widget.product != null) {
       _nameController.text = widget.product!.name;
-      _priceController.text = widget.product!.pricePerUnit.toString();
+      _priceController.text = widget.product!.price.toString();
       _heightFeetController.text =
           widget.product!.height?.feet.toString() ?? '';
       _heightInchesController.text =
@@ -48,7 +50,7 @@ class _ProductFormState extends State<ProductForm> {
       _depthFeetController.text = widget.product!.depth?.feet.toString() ?? '';
       _depthInchesController.text =
           widget.product!.depth?.inches.toString() ?? '';
-      _otherController.text = widget.product!.other ?? '';
+      _otherController.text = widget.product!.description ?? '';
     }
   }
 
@@ -150,6 +152,9 @@ class _ProductFormState extends State<ProductForm> {
             _priceController.text.isNotEmpty &&
             double.tryParse(_priceController.text) != null;
       case 1:
+        if (_selectedType == ProductType.standalone) {
+          return true; // Skip dimension validation for standalone products
+        }
         return _formKey.currentState?.validate() ?? false;
       case 2:
         return true;
@@ -175,13 +180,21 @@ Future<void> _handleSave() async {
 
       final newProduct = Product(
         id: widget.product?.id,
-        userId: user.uid, // Add the user ID here
+        userId: user.uid,
         name: _nameController.text,
-        pricePerUnit: double.parse(_priceController.text),
-        height: _getDimension(_heightFeetController, _heightInchesController),
-        width: _getDimension(_widthFeetController, _widthInchesController),
-        depth: _getDimension(_depthFeetController, _depthInchesController),
-        other: _otherController.text.isNotEmpty ? _otherController.text : null,
+        type: _selectedType,
+        price: double.parse(_priceController.text),
+        height: _selectedType == ProductType.dimensionBased
+            ? _getDimension(_heightFeetController, _heightInchesController)
+            : null,
+        width: _selectedType == ProductType.dimensionBased
+            ? _getDimension(_widthFeetController, _widthInchesController)
+            : null,
+        depth: _selectedType == ProductType.dimensionBased
+            ? _getDimension(_depthFeetController, _depthInchesController)
+            : null,
+        description:
+            _otherController.text.isNotEmpty ? _otherController.text : null,
       );
 
       try {
@@ -208,6 +221,33 @@ Future<void> _handleSave() async {
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 24),
+        // Add Product Type Selection
+        const Text(
+          'Product Type',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 8),
+        SegmentedButton<ProductType>(
+          segments: const [
+            ButtonSegment(
+              value: ProductType.standalone,
+              label: Text('Standalone'),
+              icon: Icon(Icons.chair),
+            ),
+            ButtonSegment(
+              value: ProductType.dimensionBased,
+              label: Text('Dimension Based'),
+              icon: Icon(Icons.square_foot),
+            ),
+          ],
+          selected: {_selectedType},
+          onSelectionChanged: (Set<ProductType> selected) {
+            setState(() {
+              _selectedType = selected.first;
+            });
+          },
+        ),
+        const SizedBox(height: 16),
         TextFormField(
           controller: _nameController,
           decoration: const InputDecoration(
@@ -224,12 +264,14 @@ Future<void> _handleSave() async {
         const SizedBox(height: 16),
         TextFormField(
           controller: _priceController,
-          decoration: const InputDecoration(
-            labelText: 'Price',
+          decoration: InputDecoration(
+            labelText: _selectedType == ProductType.standalone
+                ? 'Price'
+                : 'Price per Square Feet',
             prefixText: '₹ ',
-            border: OutlineInputBorder(),
+            border: const OutlineInputBorder(),
           ),
-          keyboardType: TextInputType.number,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
           validator: (value) {
             if (value == null || value.isEmpty) {
               return 'Please enter price';
