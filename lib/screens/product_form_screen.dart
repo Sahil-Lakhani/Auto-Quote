@@ -82,12 +82,17 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (product.type == ProductType.standalone)
-              // const Text('Standalone'),
-              Text('Price: ₹${product.price}'),
-            if (product.type == ProductType.dimensionBased)
-              // const Text('Dimension Based'),
-              Text('Price per sqft: ₹${product.price}'),
-
+              Text('Price: ₹${product.price.toStringAsFixed(2)}'),
+            if (product.type == ProductType.dimensionBased) ...[
+              Text(
+                  'Price per sqft: ₹${product.pricePerSqft!.toStringAsFixed(2)}'),
+              if (product.height != null && product.width != null) ...[
+                Text(
+                    'Area: ${product.totalSquareFeet.toStringAsFixed(2)} sqft'),
+                Text(
+                    'Total Price: ₹${product.calculatedPrice.toStringAsFixed(2)}'),
+              ],
+            ],
             if (product.height != null ||
                 product.width != null ||
                 product.depth != null)
@@ -97,8 +102,8 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                   if (product.width != null) 'W: ${product.width!.formatted}',
                   if (product.depth != null) 'D: ${product.depth!.formatted}',
                 ].join(' × '),
+                style: TextStyle(color: Colors.grey[600]),
               ),
-            // if (product.other != null) Text('Other: ${product.other}'),
           ],
         ),
         trailing: Row(
