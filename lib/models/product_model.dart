@@ -8,6 +8,8 @@ class Dimension {
 
   String get formatted => '${feet}\'${inches}"';
 
+  double get toDecimalFeet => feet + (inches / 12);
+
   Map<String, dynamic> toMap() => {'feet': feet, 'inches': inches};
 
   factory Dimension.fromMap(Map<String, dynamic>? map) {
@@ -39,34 +41,72 @@ class Product {
   final String? userId;
   final String name;
   final ProductType type;
+  final double? pricePerSqft;
   final double price;
-  // final double pricePerUnit;
   final Dimension? height;
   final Dimension? width;
   final Dimension? depth;
   final String? description;
   final DateTime createdAt;
 
+  double get calculatedPrice {
+    if (type == ProductType.dimensionBased &&
+        height != null &&
+        width != null &&
+        pricePerSqft != null) {
+      return height!.toDecimalFeet * width!.toDecimalFeet * pricePerSqft!;
+    }
+    return price;
+  }
+
+  double get totalSquareFeet {
+    if (type == ProductType.dimensionBased && height != null && width != null) {
+      return height!.toDecimalFeet * width!.toDecimalFeet;
+    }
+    return 0;
+  }
+
   Product({
     this.id,
     this.userId,
     required this.name,
     required this.type,
-    required this.price,
-    // required this.pricePerUnit,
+    double? price,
+    this.pricePerSqft,
     this.height,
     this.width,
     this.depth,
     this.description,
     DateTime? createdAt,
-  }) : createdAt = createdAt ?? DateTime.now();
+  })  : price = type == ProductType.standalone
+            ? (price ?? 0)
+            : ((height != null && width != null && pricePerSqft != null)
+                ? height.toDecimalFeet * width.toDecimalFeet * pricePerSqft
+                : 0),
+        createdAt = createdAt ?? DateTime.now() {
+    // Validation
+    if (type == ProductType.standalone && price == null) {
+      throw ArgumentError('Price is required for standalone products');
+    }
+    if (type == ProductType.dimensionBased) {
+      if (pricePerSqft == null) {
+        throw ArgumentError(
+            'Price per square foot is required for dimension-based products');
+      }
+      if (height == null || width == null) {
+        throw ArgumentError(
+            'Height and width are required for dimension-based products');
+      }
+    }
+  }
 
   Map<String, dynamic> toMap() {
     return {
       if (userId != null) 'userId': userId,  
       'name': name,
       'type': type.toString(),
-      'price': price,
+      'price': calculatedPrice,
+      'pricePerSqft': type == ProductType.dimensionBased ? pricePerSqft : null,
       'dimensions': {
         'height': height?.toMap(),
         'width': width?.toMap(),
@@ -81,13 +121,27 @@ class Product {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     Map<String, dynamic> dimensions = data['dimensions'] ?? {};
     
+    final ProductType type = ProductType.values.firstWhere(
+        (e) => e.toString() == data['type'],
+        orElse: () => ProductType.standalone);
+
+    if (type == ProductType.standalone) {
     return Product(
       id: doc.id,
       userId: data['userId'] ?? '',
       name: data['name'] ?? '',
-      type: ProductType.values.firstWhere((e) => e.toString() == data['type'],
-          orElse: () => ProductType.dimensionBased),
+        type: type,
       price: (data['price'] ?? 0).toDouble(),
+        description: data['description'],
+        createdAt: (data['createdAt'] as Timestamp).toDate(),
+      );
+    } else {
+      return Product(
+        id: doc.id,
+        userId: data['userId'] ?? '',
+        name: data['name'] ?? '',
+        type: type,
+        pricePerSqft: (data['pricePerSqft'] ?? 0).toDouble(),
       height: dimensions['height'] != null
           ? Dimension.fromMap(dimensions['height'])
           : null,
@@ -101,25 +155,45 @@ class Product {
       createdAt: (data['createdAt'] as Timestamp).toDate(),
     );
   }
+  }
 
   factory Product.fromMap(Map<String, dynamic> map, String docId) {
     Map<String, dynamic> dimensions = map['dimensions'] ?? {};
     
+    final ProductType type = ProductType.values.firstWhere(
+        (e) => e.toString() == map['type'],
+        orElse: () => ProductType.standalone);
+
+    if (type == ProductType.standalone) {
     return Product(
       id: docId,
       userId: map['userId'] ?? '',
       name: map['name'] ?? '',
-      type: ProductType.values.firstWhere(
-        (e) => e.toString() == map['type'],
-        orElse: () => ProductType.standalone
-      ),
+        type: type,
       price: (map['price'] ?? 0).toDouble(),
-      height: dimensions['height'] != null ? Dimension.fromMap(dimensions['height']) : null,
-      width: dimensions['width'] != null ? Dimension.fromMap(dimensions['width']) : null,
-      depth: dimensions['depth'] != null ? Dimension.fromMap(dimensions['depth']) : null,
+        description: map['description'],
+        createdAt: (map['createdAt'] as Timestamp).toDate(),
+      );
+    } else {
+      return Product(
+        id: docId,
+        userId: map['userId'] ?? '',
+        name: map['name'] ?? '',
+        type: type,
+        pricePerSqft: (map['pricePerSqft'] ?? 0).toDouble(),
+        height: dimensions['height'] != null
+            ? Dimension.fromMap(dimensions['height'])
+            : null,
+        width: dimensions['width'] != null
+            ? Dimension.fromMap(dimensions['width'])
+            : null,
+        depth: dimensions['depth'] != null
+            ? Dimension.fromMap(dimensions['depth'])
+            : null,
       description: map['description'],
       createdAt: (map['createdAt'] as Timestamp).toDate(),
     );
+  }
   }
 
   @override
