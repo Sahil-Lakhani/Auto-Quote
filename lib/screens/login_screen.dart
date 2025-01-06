@@ -75,7 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'Generate professional quotes instantly',
+                    'Generate professional Quotations instantly',
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.white70,

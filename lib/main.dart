@@ -1,4 +1,5 @@
 import 'package:auto_quote/firebase_options.dart';
+import 'package:auto_quote/screens/profile_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 // import 'models/quote_model.dart';
@@ -76,7 +77,7 @@ class _MainScreenState extends State<MainScreen> {
   static final List<Widget> _screens = [
     const QuoteFormScreen(),
     const ProductFormScreen(),
-    const TemplateSelectionScreen(),
+    const ProfileScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -124,8 +125,8 @@ class _MainScreenState extends State<MainScreen> {
             label: 'Items',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard_customize),
-            label: 'Templates',
+            icon: Icon(Icons.person),
+            label: 'Profile',
           ),
         ],
         currentIndex: _selectedIndex,
