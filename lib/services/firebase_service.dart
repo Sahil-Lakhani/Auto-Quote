@@ -5,6 +5,7 @@ import '../models/product_model.dart';
 class FirebaseService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final String quotationsCollection = 'quotations';
   final String productsCollection = 'products';
 
   // Add a new product with user ID
