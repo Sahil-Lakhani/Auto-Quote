@@ -1,8 +1,10 @@
 import 'dart:io';
+import 'package:auto_quote/services/firebase_auth_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/storage_service.dart';
-import 'quote_preview_screen.dart';
+import 'package:provider/provider.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -28,18 +30,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final pdfs = await _storageService.getSavedPdfs();
       setState(() => _pdfFiles = pdfs);
     } catch (e) {
+      if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error loading PDFs: $e')),
       );
+      }
     } finally {
       setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _handleLogout(BuildContext context) async {
+    final authService = context.read<AuthService>();
+    try {
+      await authService.signOut();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error signing out: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
   Future<void> _deletePdf(File file) async {
     try {
       await _storageService.deletePdf(file);
-      await _loadPdfs(); // Refresh the list
+      await _loadPdfs();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('PDF deleted successfully')),
@@ -56,13 +76,72 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<User?>();
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Saved quotations'),
+        title: const Text('Profile'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () => showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('Logout'),
+                content: const Text('Are you sure you want to logout?'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _handleLogout(context);
+                    },
+                    child: const Text('Logout',
+                        style: TextStyle(color: Colors.red)),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : _pdfFiles.isEmpty
+          : Column(
+              children: [
+                // User Profile Section
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      CircleAvatar(
+                        radius: 50,
+                        backgroundImage: user?.photoURL != null
+                            ? NetworkImage(user!.photoURL!)
+                            : null,
+                        child: user?.photoURL == null
+                            ? const Icon(Icons.person, size: 50)
+                            : null,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        user?.displayName ?? 'User',
+                        style: Theme.of(context).textTheme.headlineSmall,
+                      ),
+                      Text(
+                        user?.email ?? '',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(),
+                // Saved Quotations Section
+                Expanded(
+                  child: _pdfFiles.isEmpty
               ? const Center(child: Text('No saved quotations found'))
               : ListView.builder(
                   itemCount: _pdfFiles.length,
@@ -82,7 +161,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         children: [
                           IconButton(
                             icon: const Icon(Icons.share),
-                            onPressed: () => _storageService.sharePdf(file),
+                                    onPressed: () =>
+                                        _storageService.sharePdf(file),
                           ),
                           IconButton(
                             icon: const Icon(Icons.delete),
@@ -95,7 +175,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 ),
                                 actions: [
                                   TextButton(
-                                    onPressed: () => Navigator.pop(context),
+                                            onPressed: () =>
+                                                Navigator.pop(context),
                                     child: const Text('Cancel'),
                                   ),
                                   TextButton(
@@ -105,7 +186,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     },
                                     child: const Text(
                                       'Delete',
-                                      style: TextStyle(color: Colors.red),
+                                              style:
+                                                  TextStyle(color: Colors.red),
                                     ),
                                   ),
                                 ],
@@ -116,18 +198,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       onTap: () {
                         print("Tapped on ${file.path}");
-                        // Navigator.push(
-                        //   context,
-                        //   MaterialPageRoute(
-                        //     builder: (context) => QuotePreviewScreen(
-                        //       quote: file,
-                        //     ),
-                        //   ),
-                        // );
                       },
                     );
                   },
                 ),
+                ),
+              ],
+            ),
     );
   }
 }

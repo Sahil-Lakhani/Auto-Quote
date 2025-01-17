@@ -266,7 +266,11 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
+      body: GestureDetector(
+        onTap: () {
+          FocusScope.of(context).unfocus();
+        },
+        child: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -334,6 +338,7 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
             ],
           ),
         ),
+      ),
       ),
     );
   }
