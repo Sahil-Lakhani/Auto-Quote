@@ -155,6 +155,7 @@ class _RoomsSectionState extends State<RoomsSection> {
                                     if (product.depth != null)
                                       'D: ${product.depth!.formatted}',
                                   ].join(' × '),
+                                  pricePerSqft: product.pricePerSqft,
                                   quantity: quantity.toInt(),
                                   unitPrice: product.price,
                                   totalPrice: product.price * quantity,

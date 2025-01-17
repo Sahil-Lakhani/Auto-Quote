@@ -166,7 +166,6 @@ class PdfService {
   static pw.Widget _buildSection(QuoteRoomType section) {
     double total =
         section.items.fold(0.0, (sum, item) => sum + item.totalPrice);
-
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
