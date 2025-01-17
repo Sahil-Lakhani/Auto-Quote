@@ -4,6 +4,7 @@ class QuoteItem {
   final String description;
   final String? dimensions;
   final int? quantity;
+  final double? pricePerSqft;
   final double unitPrice;
   final double totalPrice;
 
@@ -11,6 +12,7 @@ class QuoteItem {
     required this.description,
     this.dimensions,
     this.quantity,
+    this.pricePerSqft,
     required this.unitPrice,
     required this.totalPrice,
   });

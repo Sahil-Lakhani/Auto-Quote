@@ -209,11 +209,12 @@ class PdfService {
       border: pw.TableBorder.all(color: PdfColors.grey300),
       columnWidths: {
         0: const pw.FlexColumnWidth(0.5), // #
-        1: const pw.FlexColumnWidth(2.5), // Product name
-        2: const pw.FlexColumnWidth(2), // Dimensions
-        3: const pw.FlexColumnWidth(0.5), // Quantity
-        4: const pw.FlexColumnWidth(1.2), // Unit Price
-        5: const pw.FlexColumnWidth(1.2), // Total
+        1: const pw.FlexColumnWidth(2.0), // Product name
+        2: const pw.FlexColumnWidth(1.5), // Dimensions
+        3: const pw.FlexColumnWidth(1.0), // Price/Sqft
+        4: const pw.FlexColumnWidth(0.5), // Quantity
+        5: const pw.FlexColumnWidth(1.0), // Unit Price
+        6: const pw.FlexColumnWidth(1.0), // Total
       },
       children: [
         pw.TableRow(
@@ -222,6 +223,7 @@ class PdfService {
             _buildTableCell('#', isHeader: true),
             _buildTableCell('Product Name', isHeader: true),
             _buildTableCell('Dimensions', isHeader: true),
+            _buildTableCell('Price/Sqft', isHeader: true, isCenter: true),
             _buildTableCell('Qty', isHeader: true),
             _buildTableCell('Unit Price', isHeader: true, isCenter: true),
             _buildTableCell('Total', isHeader: true, isCenter: true),
@@ -233,13 +235,36 @@ class PdfService {
           return pw.TableRow(
             children: [
               _buildTableCell(index.toString()),
-              _buildTableCell(item.description),
-              _buildTableCell(item.dimensions ?? '-'),
-              _buildTableCell(item.quantity?.toString() ?? '1'),
-              _buildTableCell(item.unitPrice.toStringAsFixed(2),
-                  isAmount: true, isCenter: false),
-              _buildTableCell(item.totalPrice.toStringAsFixed(2),
-                  isAmount: true, isCenter: false),
+            _buildTableCell(item.description.isEmpty ? '-' : item.description),
+            _buildTableCell(
+              (item.dimensions?.isEmpty ?? true) ? '-' : item.dimensions!
+            ),
+            _buildTableCell(
+              item.pricePerSqft == null || item.pricePerSqft == 0 
+                ? '-' 
+                : item.pricePerSqft!.toStringAsFixed(2),
+              isAmount: true,
+              isCenter: false
+            ),
+            _buildTableCell(
+              item.quantity == null || item.quantity == 0 
+                ? '-' 
+                : item.quantity.toString()
+            ),
+            _buildTableCell(
+              item.unitPrice == 0 
+                ? '-' 
+                : item.unitPrice.toStringAsFixed(2),
+              isAmount: true,
+              isCenter: false
+            ),
+            _buildTableCell(
+              item.totalPrice == 0 
+                ? '-' 
+                : item.totalPrice.toStringAsFixed(2),
+              isAmount: true,
+              isCenter: false
+            ),
             ],
           );
         }),
