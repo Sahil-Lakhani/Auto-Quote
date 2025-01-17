@@ -5,6 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/storage_service.dart';
 import 'package:provider/provider.dart';
+import 'package:open_file/open_file.dart';
+// import 'package:path_provider/path_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -69,6 +72,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error deleting PDF: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _openFileLocation(File file) async {
+    try {
+      if (Platform.isAndroid || Platform.isIOS) {
+        // Open the PDF file directly instead of the folder
+        await OpenFile.open(file.path);
+      } else {
+        throw 'Platform not supported';
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error opening file: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
@@ -196,9 +219,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         ],
                       ),
-                      onTap: () {
-                        print("Tapped on ${file.path}");
-                      },
+                              onTap: () => _openFileLocation(file),
                     );
                   },
                 ),
