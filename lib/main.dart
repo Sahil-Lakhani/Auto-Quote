@@ -2,8 +2,6 @@ import 'package:auto_quote/firebase_options.dart';
 import 'package:auto_quote/screens/profile_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-// import 'models/quote_model.dart';
-// import 'screens/quote_preview_screen.dart';
 import 'screens/quote_form_screen.dart';
 import 'screens/product_form_screen.dart';
 import 'screens/template_selection_screen.dart';
@@ -88,31 +86,7 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authService = context.read<AuthService>();
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Auto Quote'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              try {
-                await authService.signOut();
-              } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Error signing out: $e'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              }
-            },
-          ),
-        ],
-      ),
       body: _screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         items: const [
