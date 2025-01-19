@@ -7,6 +7,7 @@ class QuoteItem {
   final double? pricePerSqft;
   final double unitPrice;
   final double totalPrice;
+  final double? totalSqft;
 
   QuoteItem({
     required this.description,
@@ -15,6 +16,7 @@ class QuoteItem {
     this.pricePerSqft,
     required this.unitPrice,
     required this.totalPrice,
+    this.totalSqft,
   });
 }
 

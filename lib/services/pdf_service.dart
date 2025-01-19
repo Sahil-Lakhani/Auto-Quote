@@ -208,12 +208,13 @@ class PdfService {
       border: pw.TableBorder.all(color: PdfColors.grey300),
       columnWidths: {
         0: const pw.FlexColumnWidth(0.5), // #
-        1: const pw.FlexColumnWidth(2.0), // Product name
+        1: const pw.FlexColumnWidth(1.5), // Product name
         2: const pw.FlexColumnWidth(1.5), // Dimensions
         3: const pw.FlexColumnWidth(1.0), // Price/Sqft
-        4: const pw.FlexColumnWidth(0.5), // Quantity
-        5: const pw.FlexColumnWidth(1.0), // Unit Price
-        6: const pw.FlexColumnWidth(1.0), // Total
+        4: const pw.FlexColumnWidth(1.0), // Total Sqft
+        5: const pw.FlexColumnWidth(0.5), // Quantity
+        6: const pw.FlexColumnWidth(1.0), // Unit Price
+        7: const pw.FlexColumnWidth(1.0), // Total
       },
       children: [
         pw.TableRow(
@@ -222,7 +223,8 @@ class PdfService {
             _buildTableCell('#', isHeader: true),
             _buildTableCell('Product Name', isHeader: true),
             _buildTableCell('Dimensions', isHeader: true),
-            _buildTableCell('Price/Sqft', isHeader: true, isCenter: true),
+            _buildTableCell('Price Sqft', isHeader: true, isCenter: true),
+            _buildTableCell('Total  Sqft', isHeader: true, isCenter: true),
             _buildTableCell('Qty', isHeader: true),
             _buildTableCell('Unit Price', isHeader: true, isCenter: true),
             _buildTableCell('Total', isHeader: true, isCenter: true),
@@ -245,6 +247,13 @@ class PdfService {
               isAmount: true,
               isCenter: false
             ),
+              _buildTableCell(
+                item.totalSqft == null || item.totalSqft == 0 
+                  ? '-' 
+                  : item.totalSqft!.toStringAsFixed(2),
+                isAmount: false,
+                isCenter: true
+              ),
             _buildTableCell(
               item.quantity == null || item.quantity == 0 
                 ? '-' 

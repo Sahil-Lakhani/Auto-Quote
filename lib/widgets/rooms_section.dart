@@ -159,6 +159,7 @@ class _RoomsSectionState extends State<RoomsSection> {
                                   quantity: quantity.toInt(),
                                   unitPrice: product.price,
                                   totalPrice: product.price * quantity,
+                                  totalSqft: product.totalSquareFeet,
                           );
 
                                 context
