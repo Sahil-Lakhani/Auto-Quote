@@ -43,7 +43,10 @@ class StorageService {
 
     // Save PDF to local storage
     final quoteDir = await getQuoteDirectory();
-    final fileName = '${quote.clientName}_${DateTime.now()}.pdf';
+    final DateTime now = DateTime.now();
+    final String dateStr =
+        '${now.day.toString().padLeft(2, '0')}${now.month.toString().padLeft(2, '0')}${now.year}';
+    final fileName = '${quote.clientName}_$dateStr.pdf';
     final file = File('${quoteDir.path}/$fileName');
     await file.writeAsBytes(pdfBytes);
 
