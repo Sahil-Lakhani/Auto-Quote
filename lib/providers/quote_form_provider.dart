@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 class QuoteFormProvider extends ChangeNotifier {
   String companyName = '';
   String address = '';
-  File? _logoFile; 
+  File? _logoFile;
   String phone = '';
   String customerName = '';
   String customerPhone = '';
@@ -14,7 +14,7 @@ class QuoteFormProvider extends ChangeNotifier {
   List<QuoteRoomType> rooms = [];
   Map<int, int> itemQuantities = {};
   int transportCharges = 0;
-  int laborCharges = 0; 
+  int laborCharges = 0;
 
   bool _isGstEnabled = false; 
 
@@ -139,7 +139,7 @@ class QuoteFormProvider extends ChangeNotifier {
   void clearForm() {
     companyName = '';
     address = '';
-     _logoFile = null;
+    _logoFile = null;
     phone = '';
     customerName = '';
     date = '';

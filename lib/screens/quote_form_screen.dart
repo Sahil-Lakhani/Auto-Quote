@@ -1,10 +1,7 @@
 import 'dart:typed_data';
-
-// import 'package:auto_quote/models/product_model.dart';
 import 'package:auto_quote/models/quote_model.dart';
 import 'package:auto_quote/providers/quote_form_provider.dart';
 import 'package:auto_quote/screens/quote_preview_screen.dart';
-// import 'package:auto_quote/services/firebase_service.dart';
 import 'package:auto_quote/widgets/company_info_section.dart';
 import 'package:auto_quote/widgets/customer_info_section.dart';
 import 'package:auto_quote/widgets/charges_section.dart';
@@ -100,11 +97,11 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
     if (_roomTypeController.text.isEmpty) return;
     final provider = context.read<QuoteFormProvider>();
     provider.addRoom(QuoteRoomType(
-        title: _roomTypeController.text,
-        items: [],
+      title: _roomTypeController.text,
+      items: [],
       roomTotal: provider.roomTotal,
-      ));
-      _roomTypeController.clear();
+    ));
+    _roomTypeController.clear();
   }
 
   Future<void> _pickLogo() async {
@@ -145,58 +142,58 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
   Widget _buildLogoPreview() {
     return Consumer<QuoteFormProvider>(
       builder: (context, provider, child) {
-    return Container(
-      height: 128,
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey),
-        borderRadius: BorderRadius.circular(8),
-      ),
+        return Container(
+          height: 128,
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey),
+            borderRadius: BorderRadius.circular(8),
+          ),
           child: provider.logoFile != null
-          ? Stack(
-              fit: StackFit.expand,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.file(
+              ? Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.file(
                         provider.logoFile!,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                Positioned(
-                  top: 4,
-                  right: 4,
-                  child: Container(
-                    width: 34, 
-                    height: 34, 
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.6),
-                      border: Border.all(color: Colors.white, width: 1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: IconButton(
-                      icon: const Icon(
-                        Icons.close,
-                        color: Colors.white,
-                        size: 16, 
+                        fit: BoxFit.cover,
                       ),
-                      padding: EdgeInsets.zero, 
-                          constraints: const BoxConstraints(),
-                      onPressed: () {
-                            provider.removeLogo();
-                      },
                     ),
+                    Positioned(
+                      top: 4,
+                      right: 4,
+                      child: Container(
+                        width: 34,
+                        height: 34,
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.6),
+                          border: Border.all(color: Colors.white, width: 1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.close,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          onPressed: () {
+                            provider.removeLogo();
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              : Center(
+                  child: TextButton.icon(
+                    onPressed: _pickLogo,
+                    icon: const Icon(Icons.add_photo_alternate),
+                    label: const Text('Add Logo'),
                   ),
                 ),
-              ],
-            )
-          : Center(
-              child: TextButton.icon(
-                onPressed: _pickLogo,
-                icon: const Icon(Icons.add_photo_alternate),
-                label: const Text('Add Logo'),
-              ),
-            ),
-    );
+        );
       },
     );
   }
@@ -237,7 +234,7 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
       lastDate: DateTime(2100),
     );
     if (picked != null) {
-        final provider = context.read<QuoteFormProvider>();
+      final provider = context.read<QuoteFormProvider>();
       // Format the date as dd/MM/yyyy
       final formattedDate =
           "${picked.day.toString().padLeft(2, '0')}/${picked.month.toString().padLeft(2, '0')}/${picked.year}";
@@ -271,74 +268,74 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
           FocusScope.of(context).unfocus();
         },
         child: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-        child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-              CompanyInfoSection(
-                companyController: _companyController,
-                addressController: _addressController,
-                phoneController: _phoneController,
-                pickLogo: _pickLogo,
-            ),
-            const SizedBox(height: 16),
-              CustomerInfoSection(
-                customerController: _customerController,
-                phoneController: _customerphoneController,
-                dateController: _dateController,
-                selectDate: _selectDate,
-                ),
-              const SizedBox(height: 16),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Add Room',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Expanded(
-                  child: TextField(
-                              controller: _roomTypeController,
-                              decoration: const InputDecoration(
-                                labelText: 'Room Type',
-                                border: OutlineInputBorder(),
-                    ),
-                  ),
+                CompanyInfoSection(
+                  companyController: _companyController,
+                  addressController: _addressController,
+                  phoneController: _phoneController,
+                  pickLogo: _pickLogo,
                 ),
-                const SizedBox(width: 16),
-                          ElevatedButton(
-                            onPressed: _addRoom,
-                            child: const Text('Add Room'),
+                const SizedBox(height: 16),
+                CustomerInfoSection(
+                  customerController: _customerController,
+                  phoneController: _customerphoneController,
+                  dateController: _dateController,
+                  selectDate: _selectDate,
+                ),
+                const SizedBox(height: 16),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Add Room',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
                           ),
-                        ],
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: _roomTypeController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Room Type',
+                                  border: OutlineInputBorder(),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            ElevatedButton(
+                              onPressed: _addRoom,
+                              child: const Text('Add Room'),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                    ],
                   ),
                 ),
+                const SizedBox(height: 16),
+                const RoomsSection(),
+                const SizedBox(height: 16),
+                ChargesSection(
+                  transportController: _transportController,
+                  labourController: _labourController,
+                ),
+                const SizedBox(height: 16),
+                _buildSummary(),
+              ],
             ),
-            const SizedBox(height: 16),
-              const RoomsSection(),
-              const SizedBox(height: 16),
-              ChargesSection(
-                transportController: _transportController,
-                labourController: _labourController,
-            ),
-            const SizedBox(height: 16),
-              _buildSummary(),
-            ],
           ),
         ),
-      ),
       ),
     );
   }
@@ -346,23 +343,23 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
 
   Widget _buildSummary() {
     return Consumer<QuoteFormProvider>(
-                builder: (context, provider, child) {
-                  return Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
+      builder: (context, provider, child) {
+        return Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-            const Text(
-                            'Summary',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+                    const Text(
+                      'Summary',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     Row(
                       children: [
                         const Text('GST'),
@@ -375,22 +372,22 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                     ),
                   ],
                 ),
-            const SizedBox(height: 16),
-                          _buildSummaryRow('Subtotal', provider.subtotal),
+                const SizedBox(height: 16),
+                _buildSummaryRow('Subtotal', provider.subtotal),
                 if (provider.isGstEnabled) ...[
-                          const SizedBox(height: 8),
-                          _buildSummaryRow('CGST (9%)', provider.cgst),
-                          const SizedBox(height: 8),
-                          _buildSummaryRow('SGST (9%)', provider.sgst),
+                  const SizedBox(height: 8),
+                  _buildSummaryRow('CGST (9%)', provider.cgst),
+                  const SizedBox(height: 8),
+                  _buildSummaryRow('SGST (9%)', provider.sgst),
                 ],
-                          const Divider(),
+                const Divider(),
                 _buildSummaryRow('Grand Total', provider.grandTotal,
                     isTotal: true),
-                        ],
-                    ),
-                  ),
-                  );
-                },
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -403,15 +400,15 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
           style: TextStyle(
             fontSize: isTotal ? 18 : 16,
             fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+          ),
         ),
-      ),
         Text(
           '₹${amount.toStringAsFixed(2)}',
           style: TextStyle(
             fontSize: isTotal ? 18 : 16,
             fontWeight: FontWeight.bold,
           ),
-      ),
+        ),
       ],
     );
   }

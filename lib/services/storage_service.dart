@@ -41,7 +41,6 @@ class StorageService {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) throw Exception('No user logged in');
 
-    // Save PDF to local storage
     final quoteDir = await getQuoteDirectory();
     final DateTime now = DateTime.now();
     final String dateStr =
@@ -50,7 +49,6 @@ class StorageService {
     final file = File('${quoteDir.path}/$fileName');
     await file.writeAsBytes(pdfBytes);
 
-    // Save quote data to Firebase
     await _firestore.collection('quotations').add({
       'userId': user.uid,
       'companyName': quote.companyName,

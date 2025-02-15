@@ -7,7 +7,7 @@ import '../models/quote_model.dart';
 class PdfService {
   static Future<Uint8List> generateQuote(Quote quote) async {
     final pdf = pw.Document();
-    
+
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
@@ -67,18 +67,18 @@ class PdfService {
             borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
           ),
           child: pw.Row(
-          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
               pw.Expanded(
                 child: pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
-          children: [
-            pw.Text(
+                  children: [
+                    pw.Text(
                       quote.companyName.toUpperCase(),
-              style: pw.TextStyle(
-                fontSize: 24,
-                fontWeight: pw.FontWeight.bold,
+                      style: pw.TextStyle(
+                        fontSize: 24,
+                        fontWeight: pw.FontWeight.bold,
                         color: PdfColors.blue900,
                       ),
                     ),
@@ -95,20 +95,20 @@ class PdfService {
                       ),
                     ),
                   ],
+                ),
               ),
-            ),
-            if (quote.logoBytes != null)
-              pw.Container(
+              if (quote.logoBytes != null)
+                pw.Container(
                   width: 120,
                   height: 60,
                   margin: const pw.EdgeInsets.only(left: 20),
-                child: pw.Image(
-                  pw.MemoryImage(quote.logoBytes!),
-                  fit: pw.BoxFit.contain,
+                  child: pw.Image(
+                    pw.MemoryImage(quote.logoBytes!),
+                    fit: pw.BoxFit.contain,
+                  ),
                 ),
-            ),
-          ],
-        ),
+            ],
+          ),
         ),
         pw.SizedBox(height: 20),
         // Quote details section
@@ -119,8 +119,8 @@ class PdfService {
             borderRadius: pw.BorderRadius.all(pw.Radius.circular(4)),
           ),
           child: pw.Row(
-          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-          children: [
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
               pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
@@ -154,9 +154,9 @@ class PdfService {
                     style: pw.TextStyle(
                         fontSize: 12, fontWeight: pw.FontWeight.bold),
                   ),
-          ],
-        ),
-      ],
+                ],
+              ),
+            ],
           ),
         ),
       ],
@@ -237,40 +237,40 @@ class PdfService {
             children: [
               _buildTableCell(index.toString()),
             _buildTableCell(item.description.isEmpty ? '-' : item.description),
-            _buildTableCell(
+              _buildTableCell(
               (item.dimensions?.isEmpty ?? true) ? '-' : item.dimensions!
             ),
-            _buildTableCell(
-              item.pricePerSqft == null || item.pricePerSqft == 0 
-                ? '-' 
-                : item.pricePerSqft!.toStringAsFixed(2),
-              isAmount: true,
+              _buildTableCell(
+                  item.pricePerSqft == null || item.pricePerSqft == 0
+                      ? '-'
+                      : item.pricePerSqft!.toStringAsFixed(2),
+                  isAmount: true,
               isCenter: false
             ),
               _buildTableCell(
-                item.totalSqft == null || item.totalSqft == 0 
-                  ? '-' 
-                  : item.totalSqft!.toStringAsFixed(2),
-                isAmount: false,
+                  item.totalSqft == null || item.totalSqft == 0
+                      ? '-'
+                      : item.totalSqft!.toStringAsFixed(2),
+                  isAmount: false,
                 isCenter: true
               ),
             _buildTableCell(
               item.quantity == null || item.quantity == 0 
-                ? '-' 
+                  ? '-'
                 : item.quantity.toString()
             ),
-            _buildTableCell(
+              _buildTableCell(
               item.unitPrice == 0 
                 ? '-' 
                 : item.unitPrice.toStringAsFixed(2),
-              isAmount: true,
+                  isAmount: true,
               isCenter: false
             ),
-            _buildTableCell(
-              item.totalPrice == 0 
-                ? '-' 
-                : item.totalPrice.toStringAsFixed(2),
-              isAmount: true,
+              _buildTableCell(
+                  item.totalPrice == 0
+                      ? '-'
+                      : item.totalPrice.toStringAsFixed(2),
+                  isAmount: true,
               isCenter: false
             ),
             ],
@@ -380,12 +380,12 @@ class PdfService {
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
                   pw.Text(
-        'Thank you for choosing us!',
-        style: pw.TextStyle(
-          fontStyle: pw.FontStyle.italic,
-          color: PdfColors.grey700,
-        ),
-      ),
+                    'Thank you for choosing us!',
+                    style: pw.TextStyle(
+                      fontStyle: pw.FontStyle.italic,
+                      color: PdfColors.grey700,
+                    ),
+                  ),
                   pw.SizedBox(height: 4),
                   pw.Text(
                     'For any queries, please contact us.',

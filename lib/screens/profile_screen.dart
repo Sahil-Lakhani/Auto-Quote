@@ -34,9 +34,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() => _pdfFiles = pdfs);
     } catch (e) {
       if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading PDFs: $e')),
-      );
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading PDFs: $e')),
+        );
       }
     } finally {
       setState(() => _isLoading = false);
@@ -165,64 +165,64 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 // Saved Quotations Section
                 Expanded(
                   child: _pdfFiles.isEmpty
-              ? const Center(child: Text('No saved quotations found'))
-              : ListView.builder(
-                  itemCount: _pdfFiles.length,
-                  itemBuilder: (context, index) {
-                    final file = _pdfFiles[index];
-                    final fileName = file.path.split('/').last;
-                    final fileDate = DateFormat('dd/MM/yyyy').format(
-                      file.lastModifiedSync(),
-                    );
+                      ? const Center(child: Text('No saved quotations found'))
+                      : ListView.builder(
+                          itemCount: _pdfFiles.length,
+                          itemBuilder: (context, index) {
+                            final file = _pdfFiles[index];
+                            final fileName = file.path.split('/').last;
+                            final fileDate = DateFormat('dd/MM/yyyy').format(
+                              file.lastModifiedSync(),
+                            );
 
-                    return ListTile(
-                      leading: const Icon(Icons.picture_as_pdf),
-                      title: Text(fileName),
-                      subtitle: Text('Created: $fileDate'),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.share),
+                            return ListTile(
+                              leading: const Icon(Icons.picture_as_pdf),
+                              title: Text(fileName),
+                              subtitle: Text('Created: $fileDate'),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.share),
                                     onPressed: () =>
                                         _storageService.sharePdf(file),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete),
-                            onPressed: () => showDialog(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                title: const Text('Delete Quote'),
-                                content: const Text(
-                                  'Are you sure you want to delete this quote?',
-                                ),
-                                actions: [
-                                  TextButton(
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete),
+                                    onPressed: () => showDialog(
+                                      context: context,
+                                      builder: (context) => AlertDialog(
+                                        title: const Text('Delete Quote'),
+                                        content: const Text(
+                                          'Are you sure you want to delete this quote?',
+                                        ),
+                                        actions: [
+                                          TextButton(
                                             onPressed: () =>
                                                 Navigator.pop(context),
-                                    child: const Text('Cancel'),
-                                  ),
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                      _deletePdf(file);
-                                    },
-                                    child: const Text(
-                                      'Delete',
+                                            child: const Text('Cancel'),
+                                          ),
+                                          TextButton(
+                                            onPressed: () {
+                                              Navigator.pop(context);
+                                              _deletePdf(file);
+                                            },
+                                            child: const Text(
+                                              'Delete',
                                               style:
                                                   TextStyle(color: Colors.red),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
-                            ),
-                          ),
-                        ],
-                      ),
                               onTap: () => _openFileLocation(file),
-                    );
-                  },
-                ),
+                            );
+                          },
+                        ),
                 ),
               ],
             ),

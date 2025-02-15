@@ -80,7 +80,7 @@ class _RoomsSectionState extends State<RoomsSection> {
                                 context
                                     .read<QuoteFormProvider>()
                                     .updateItemQuantity(
-                                    roomIndex,
+                                        roomIndex,
                                         context
                                                 .read<QuoteFormProvider>()
                                                 .itemQuantities[roomIndex] ??
@@ -90,8 +90,8 @@ class _RoomsSectionState extends State<RoomsSection> {
                           },
                         ),
                       ),
-                            IconButton(
-                              icon: const Icon(Icons.remove),
+                      IconButton(
+                        icon: const Icon(Icons.remove),
                         onPressed: context
                                         .read<QuoteFormProvider>()
                                         .itemQuantities[roomIndex] ==
@@ -100,37 +100,37 @@ class _RoomsSectionState extends State<RoomsSection> {
                                         .read<QuoteFormProvider>()
                                         .itemQuantities[roomIndex]! <=
                                     1
-                                  ? null
-                                  : () {
+                            ? null
+                            : () {
                                 context
                                     .read<QuoteFormProvider>()
                                     .updateItemQuantity(
-                                          roomIndex,
+                                        roomIndex,
                                         (context
                                                     .read<QuoteFormProvider>()
                                                     .itemQuantities[roomIndex] ??
                                                 1) -
                                             1);
-                                    },
-                            ),
-                            Text(
-                              '${context.read<QuoteFormProvider>().itemQuantities[roomIndex] ?? 1}',
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.add),
-                              onPressed: () {
-                                context.read<QuoteFormProvider>().updateItemQuantity(
-                                    roomIndex,
+                              },
+                      ),
+                      Text(
+                        '${context.read<QuoteFormProvider>().itemQuantities[roomIndex] ?? 1}',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.add),
+                        onPressed: () {
+                          context.read<QuoteFormProvider>().updateItemQuantity(
+                              roomIndex,
                               (context
                                           .read<QuoteFormProvider>()
                                           .itemQuantities[roomIndex] ??
                                       1) +
                                   1);
-                              },
-                            ),
-                          ],
-                        ),
+                        },
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -139,14 +139,14 @@ class _RoomsSectionState extends State<RoomsSection> {
                         onPressed: _selectedProducts[roomIndex] == null
                             ? null
                             : () {
-                          final product = _selectedProducts[roomIndex]!;
+                                final product = _selectedProducts[roomIndex]!;
                                 final quantity = context
                                         .read<QuoteFormProvider>()
                                         .itemQuantities[roomIndex] ??
                                     1;
 
-                          final item = QuoteItem(
-                            description: product.name,
+                                final item = QuoteItem(
+                                  description: product.name,
                                   dimensions: [
                                     if (product.height != null)
                                       'H: ${product.height!.formatted}',
@@ -160,20 +160,20 @@ class _RoomsSectionState extends State<RoomsSection> {
                                   unitPrice: product.price,
                                   totalPrice: product.price * quantity,
                                   totalSqft: product.totalSquareFeet,
-                          );
+                                );
 
                                 context
                                     .read<QuoteFormProvider>()
                                     .addItemToRoom(roomIndex, item);
-                          setState(() {
-                            _selectedProducts.remove(roomIndex);
-                            _roomsInAddMode.remove(roomIndex);
-                          });
+                                setState(() {
+                                  _selectedProducts.remove(roomIndex);
+                                  _roomsInAddMode.remove(roomIndex);
+                                });
                                 context
                                     .read<QuoteFormProvider>()
                                     .itemQuantities
                                     .remove(roomIndex);
-                        },
+                              },
                         child: const Text('Add'),
                       ),
                       const SizedBox(width: 16),
@@ -182,7 +182,7 @@ class _RoomsSectionState extends State<RoomsSection> {
                         child: const Text('Cancel'),
                       ),
                     ],
-                    ),
+                  ),
                 ],
               );
             },
@@ -224,12 +224,12 @@ class _RoomsSectionState extends State<RoomsSection> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                              IconButton(
-                                icon: const Icon(Icons.delete, color: Colors.red),
-                                onPressed: () => _removeRoom(index),
-                              ),
-                            ],
+                          IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () => _removeRoom(index),
                           ),
+                        ],
+                      ),
                     ),
                     Divider(
                       color: Colors.grey[300],
