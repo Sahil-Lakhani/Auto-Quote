@@ -72,7 +72,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     );
   }
 
-  Widget _buildProductItem(Product product) {
+Widget _buildProductItem(Product product) {
     return Card(
       elevation: 2,
       margin: const EdgeInsets.only(bottom: 12),
@@ -90,7 +90,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                 Text(
                     'Area: ${product.totalSquareFeet.toStringAsFixed(2)} sqft'),
                 Text(
-                    'Total Price: ₹${product.calculatedPrice.toStringAsFixed(2)}'),
+                    'Total Price: ₹${product.price.toStringAsFixed(2)}'), // Changed from calculatedPrice to price
               ],
             ],
             if (product.height != null ||
