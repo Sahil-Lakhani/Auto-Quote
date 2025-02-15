@@ -41,7 +41,7 @@ class _ProductFormState extends State<ProductForm> {
       _selectedType = widget.product!.type;
 
       if (_selectedType == ProductType.standalone) {
-      _priceController.text = widget.product!.price.toString();
+        _priceController.text = widget.product!.price.toString();
       } else {
         _pricePerSqftController.text = widget.product!.pricePerSqft.toString();
       }
@@ -49,7 +49,7 @@ class _ProductFormState extends State<ProductForm> {
       // Initialize dimensions if they exist
       if (widget.product!.height != null) {
         _heightFeetController.text = widget.product!.height!.feet.toString();
-      _heightInchesController.text =
+        _heightInchesController.text =
             widget.product!.height!.inches.toString();
       }
       if (widget.product!.width != null) {
@@ -89,15 +89,15 @@ class _ProductFormState extends State<ProductForm> {
           flex: 2,
           child: Text(label),
         ),
-            Expanded(
+        Expanded(
           flex: 3,
-              child: TextFormField(
-                controller: feetController,
-                decoration: const InputDecoration(
-                  labelText: 'Feet',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
+          child: TextFormField(
+            controller: feetController,
+            decoration: const InputDecoration(
+              labelText: 'Feet',
+              border: OutlineInputBorder(),
+            ),
+            keyboardType: TextInputType.number,
             validator: required
                 ? (value) {
                     if (value == null || value.isEmpty) {
@@ -109,18 +109,18 @@ class _ProductFormState extends State<ProductForm> {
                     return null;
                   }
                 : null,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
           flex: 3,
-              child: TextFormField(
-                controller: inchesController,
-                decoration: const InputDecoration(
-                  labelText: 'Inches',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
+          child: TextFormField(
+            controller: inchesController,
+            decoration: const InputDecoration(
+              labelText: 'Inches',
+              border: OutlineInputBorder(),
+            ),
+            keyboardType: TextInputType.number,
             validator: required
                 ? (value) {
                     if (value == null || value.isEmpty) {
@@ -132,11 +132,11 @@ class _ProductFormState extends State<ProductForm> {
                     final inches = int.parse(value);
                     if (inches >= 12) {
                       return 'Must be < 12';
-                  }
-                  return null;
+                    }
+                    return null;
                   }
                 : null,
-            ),
+          ),
         ),
       ],
     );
@@ -178,6 +178,12 @@ class _ProductFormState extends State<ProductForm> {
             ? '0'
             : _widthInchesController.text),
       );
+      print('Creating dimension-based product:');
+      print('Height: ${height.formatted}');
+      print('Width: ${width.formatted}');
+      print('Price per sqft: ₹${_pricePerSqftController.text}');
+    } else {
+      print('Creating standalone product with price: ₹${_priceController.text}');
     }
 
     // Depth is optional for both types
@@ -186,26 +192,26 @@ class _ProductFormState extends State<ProductForm> {
       depth = Dimension(
         feet: int.parse(_depthFeetController.text),
         inches: int.parse(_depthInchesController.text),
-        );
-      }
+      );
+    }
 
     return Product(
-        id: widget.product?.id,
+      id: widget.product?.id,
       userId: widget.product?.userId,
-        name: _nameController.text,
-        type: _selectedType,
+      name: _nameController.text,
+      type: _selectedType,
       price: _selectedType == ProductType.standalone
           ? double.parse(_priceController.text)
-            : null,
+          : null,
       pricePerSqft: _selectedType == ProductType.dimensionBased
           ? double.parse(_pricePerSqftController.text)
-            : null,
+          : null,
       height: height,
       width: width,
       depth: depth,
       description: _descriptionController.text.isNotEmpty
           ? _descriptionController.text
-            : null,
+          : null,
     );
   }
 
@@ -215,28 +221,28 @@ class _ProductFormState extends State<ProductForm> {
       key: _formKey,
       child: SingleChildScrollView(
         child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
-      children: [
+          children: [
             Text(
               widget.product == null ? 'Add Product' : 'Edit Product',
               style: Theme.of(context).textTheme.headlineSmall,
-        ),
+            ),
             const SizedBox(height: 24),
-        TextFormField(
-          controller: _nameController,
-          decoration: const InputDecoration(
-            labelText: 'Name',
-            border: OutlineInputBorder(),
-          ),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
+            TextFormField(
+              controller: _nameController,
+              decoration: const InputDecoration(
+                labelText: 'Name',
+                border: OutlineInputBorder(),
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
                   return 'Please enter a name';
-            }
-            return null;
-          },
-        ),
-        const SizedBox(height: 16),
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
             DropdownButtonFormField<ProductType>(
               value: _selectedType,
               decoration: const InputDecoration(
@@ -259,24 +265,24 @@ class _ProductFormState extends State<ProductForm> {
             ),
             const SizedBox(height: 16),
             if (_selectedType == ProductType.standalone) ...[
-        TextFormField(
-          controller: _priceController,
+              TextFormField(
+                controller: _priceController,
                 decoration: const InputDecoration(
                   labelText: 'Price',
                   border: OutlineInputBorder(),
                   prefixText: '₹',
-          ),
+                ),
                 keyboardType: TextInputType.number,
-          validator: (value) {
-            if (value == null || value.isEmpty) {
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
                     return 'Please enter a price';
-            }
-            if (double.tryParse(value) == null) {
-              return 'Please enter a valid number';
-            }
-            return null;
-          },
-        ),
+                  }
+                  if (double.tryParse(value) == null) {
+                    return 'Please enter a valid number';
+                  }
+                  return null;
+                },
+              ),
             ] else ...[
               TextFormField(
                 controller: _pricePerSqftController,
@@ -295,35 +301,35 @@ class _ProductFormState extends State<ProductForm> {
                   }
                   return null;
                 },
-        ),
+              ),
               const SizedBox(height: 16),
-        _buildDimensionFields(
+              _buildDimensionFields(
                 'Height',
                 _heightFeetController,
                 _heightInchesController,
                 required: true,
               ),
-        const SizedBox(height: 16),
-        _buildDimensionFields(
+              const SizedBox(height: 16),
+              _buildDimensionFields(
                 'Width',
                 _widthFeetController,
                 _widthInchesController,
                 required: true,
               ),
             ],
-        const SizedBox(height: 16),
-        _buildDimensionFields(
+            const SizedBox(height: 16),
+            _buildDimensionFields(
               'Depth',
               _depthFeetController,
               _depthInchesController,
-        ),
+            ),
             const SizedBox(height: 16),
-        TextFormField(
+            TextFormField(
               controller: _descriptionController,
-          decoration: const InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Description (Optional)',
-            border: OutlineInputBorder(),
-          ),
+                border: OutlineInputBorder(),
+              ),
               maxLines: 3,
             ),
             const SizedBox(height: 24),
