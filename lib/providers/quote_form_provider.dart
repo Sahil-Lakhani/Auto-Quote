@@ -15,10 +15,13 @@ class QuoteFormProvider extends ChangeNotifier {
   Map<int, int> itemQuantities = {};
   int transportCharges = 0;
   int laborCharges = 0;
+  int? _advancePaymentPercentage = 50;
 
-  bool _isGstEnabled = false; 
+  bool _isGstEnabled = false;
 
   bool get isGstEnabled => _isGstEnabled;
+
+  int? get advancePaymentPercentage => _advancePaymentPercentage;
 
   void toggleGst(bool value) {
     _isGstEnabled = value;
@@ -80,11 +83,10 @@ class QuoteFormProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-    void updateCustomerPhone(String value) {
+  void updateCustomerPhone(String value) {
     customerPhone = value;
     notifyListeners();
   }
-
 
   void updateDate(String value) {
     date = value;
@@ -109,6 +111,21 @@ class QuoteFormProvider extends ChangeNotifier {
       laborCharges = 0;
       notifyListeners();
     }
+  }
+
+  void updateAdvancePaymentPercentage(String value) {
+    try {
+      _advancePaymentPercentage = int.tryParse(value);
+      notifyListeners();
+    } catch (e) {
+      _advancePaymentPercentage = 50; // Default to 50% on error
+      notifyListeners();
+    }
+  }
+
+  double get advancePaymentAmount {
+    if (_advancePaymentPercentage == null) return 0.0;
+    return (grandTotal * _advancePaymentPercentage!) / 100;
   }
 
   void addRoom(QuoteRoomType room) {
@@ -147,6 +164,7 @@ class QuoteFormProvider extends ChangeNotifier {
     itemQuantities.clear();
     transportCharges = 0;
     laborCharges = 0;
+    _advancePaymentPercentage = null;
     notifyListeners();
   }
 }

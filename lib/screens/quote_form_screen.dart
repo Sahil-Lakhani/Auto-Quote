@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:auto_quote/models/quote_model.dart';
 import 'package:auto_quote/providers/quote_form_provider.dart';
 import 'package:auto_quote/screens/quote_preview_screen.dart';
+import 'package:auto_quote/widgets/advance_payment_section.dart';
 import 'package:auto_quote/widgets/company_info_section.dart';
 import 'package:auto_quote/widgets/customer_info_section.dart';
 import 'package:auto_quote/widgets/charges_section.dart';
@@ -29,13 +30,13 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
   final _roomTypeController = TextEditingController();
   final _transportController = TextEditingController();
   final _labourController = TextEditingController();
+  final _advanceController = TextEditingController();
 
   // final FirebaseService _firebaseService = FirebaseService();
   // final Map<int, Product?> _selectedProducts = {};
   // final Set<int> _roomsInAddMode = {};
   final ImagePicker _picker = ImagePicker();
   // File? _logoFile;
-  
 
   @override
   void initState() {
@@ -50,6 +51,8 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
       _dateController.text = provider.date;
       _transportController.text = provider.transportCharges.toString();
       _labourController.text = provider.laborCharges.toString();
+      _advanceController.text =
+          provider.advancePaymentPercentage?.toString() ?? '50';
 
       // Setup listeners
       _companyController.addListener(() {
@@ -75,6 +78,9 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
       });
       _labourController.addListener(() {
         provider.updateLaborCharges(_labourController.text);
+      });
+      _advanceController.addListener(() {
+        provider.updateAdvancePaymentPercentage(_advanceController.text);
       });
     });
   }
@@ -136,8 +142,6 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
       }
     }
   }
-
-  
 
   Widget _buildLogoPreview() {
     return Consumer<QuoteFormProvider>(
@@ -205,7 +209,7 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
     if (provider.logoFile != null) {
       logoBytes = provider.logoFile!.readAsBytesSync();
     }
-    
+
     return Quote(
       companyName: provider.companyName,
       address: provider.address,
@@ -223,6 +227,7 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
       cgst: provider.cgst,
       sgst: provider.sgst,
       grandTotal: provider.grandTotal,
+      advancePaymentPercentage: provider.advancePaymentPercentage,
     );
   }
 
@@ -331,6 +336,10 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                   labourController: _labourController,
                 ),
                 const SizedBox(height: 16),
+                AdvancePaymentSection(
+                  advanceController: _advanceController,
+                ),
+                const SizedBox(height: 16),
                 _buildSummary(),
               ],
             ),
@@ -339,7 +348,6 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
       ),
     );
   }
-
 
   Widget _buildSummary() {
     return Consumer<QuoteFormProvider>(
