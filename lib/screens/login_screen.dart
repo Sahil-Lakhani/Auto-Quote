@@ -19,7 +19,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       await _authService.signInWithGoogle();
-      // No need for manual navigation - AuthWrapper will handle it
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

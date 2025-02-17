@@ -1,3 +1,4 @@
+import 'package:auto_quote/screens/profile_screen.dart';
 import 'package:auto_quote/services/storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:printing/printing.dart';
@@ -42,9 +43,13 @@ class _QuotePreviewScreenState extends State<QuotePreviewScreen> {
             backgroundColor: Colors.green,
           ),
         );
+        
+        // Navigator.pop(context);
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const ProfileScreen()),
+        );
 
-        // Navigate back after successful save
-        Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {

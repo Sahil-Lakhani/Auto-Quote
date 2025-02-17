@@ -58,7 +58,7 @@ class AuthenticationWrapper extends StatelessWidget {
       return const MainScreen();
     }
 
-    return LoginScreen();
+    return const LoginScreen();
   }
 }
 
