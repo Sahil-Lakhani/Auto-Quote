@@ -49,6 +49,7 @@ class Quote {
   final double cgst;
   final double sgst;
   final double grandTotal;
+  final int? advancePaymentPercentage;
 
   Quote({
     required this.companyName,
@@ -65,5 +66,6 @@ class Quote {
     required this.cgst,
     required this.sgst,
     required this.grandTotal,
+    this.advancePaymentPercentage = 50, // Default value is 50%
   });
 }

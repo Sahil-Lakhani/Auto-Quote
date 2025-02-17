@@ -302,7 +302,7 @@ class PdfService {
         // Left side - Advance Payment details
         pw.Expanded(
           flex: 1,
-      child: pw.Container(
+          child: pw.Container(
             decoration: pw.BoxDecoration(
               border: pw.Border.all(color: PdfColors.grey300),
               borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
@@ -382,54 +382,54 @@ class PdfService {
         pw.SizedBox(width: 20),
         // Right side - Summary details
         pw.Container(
-        width: 250,
-        child: pw.Column(
-          children: [
-            ...summaryItems.map((item) => pw.Container(
-                  padding: const pw.EdgeInsets.symmetric(vertical: 4),
-                  decoration: const pw.BoxDecoration(
-                    border: pw.Border(
-                      bottom: pw.BorderSide(color: PdfColors.grey300),
-                    ),
-                  ),
-                  child: pw.Row(
-                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                    children: [
-                      pw.Text(item['label'] as String),
-                      pw.Text(
-                        (item['amount'] as double).toStringAsFixed(2),
+          width: 250,
+          child: pw.Column(
+            children: [
+              ...summaryItems.map((item) => pw.Container(
+                    padding: const pw.EdgeInsets.symmetric(vertical: 4),
+                    decoration: const pw.BoxDecoration(
+                      border: pw.Border(
+                        bottom: pw.BorderSide(color: PdfColors.grey300),
                       ),
-                    ],
-                  ),
-                )),
-            pw.Container(
-              padding: const pw.EdgeInsets.symmetric(vertical: 8),
-              decoration: const pw.BoxDecoration(
-                color: PdfColors.blue100,
-              ),
-              child: pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text(
-                    'Grand Total',
-                    style: pw.TextStyle(
-                      fontWeight: pw.FontWeight.bold,
-                      fontSize: 14,
                     ),
-                  ),
-                  pw.Text(
-                    quote.grandTotal.toStringAsFixed(2),
-                    style: pw.TextStyle(
-                      fontWeight: pw.FontWeight.bold,
-                      fontSize: 14,
+                    child: pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      children: [
+                        pw.Text(item['label'] as String),
+                        pw.Text(
+                          (item['amount'] as double).toStringAsFixed(2),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
+                  )),
+              pw.Container(
+                padding: const pw.EdgeInsets.symmetric(vertical: 8),
+                decoration: const pw.BoxDecoration(
+                  color: PdfColors.blue100,
+                ),
+                child: pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Text(
+                      'Grand Total',
+                      style: pw.TextStyle(
+                        fontWeight: pw.FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                    pw.Text(
+                      quote.grandTotal.toStringAsFixed(2),
+                      style: pw.TextStyle(
+                        fontWeight: pw.FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
       ],
     );
   }
