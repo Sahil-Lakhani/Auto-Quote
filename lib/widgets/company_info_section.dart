@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/quote_form_provider.dart';
-import 'dart:io';
 
 class CompanyInfoSection extends StatelessWidget {
   final TextEditingController companyController;
