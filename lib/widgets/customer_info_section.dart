@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+
 
 class CustomerInfoSection extends StatelessWidget {
   final TextEditingController customerController;
@@ -44,7 +44,9 @@ class CustomerInfoSection extends StatelessWidget {
               decoration: const InputDecoration(
                 labelText: 'Customer Number',
                 border: OutlineInputBorder(),
+                prefixText: '+91 ',
               ),
+              keyboardType: TextInputType.phone,
             ),
             const SizedBox(height: 16),
             TextField(
