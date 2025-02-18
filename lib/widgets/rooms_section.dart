@@ -282,14 +282,14 @@ class _RoomsSectionState extends State<RoomsSection> {
                                       children: [
                                         if (item.dimensions != null)
                                           Text(item.dimensions!),
-                                        Text('Price: ₹${item.unitPrice}'),
+                                        Text('Unit Price: ₹${item.unitPrice.toStringAsFixed(2)}'),
                                         Text('Quantity: ${item.quantity}'),
                                       ],
                                     ),
                                     Padding(
                                       padding: const EdgeInsets.only(right: 15),
                                       child: Text(
-                                        '₹${item.totalPrice}',
+                                        '₹${item.totalPrice.toStringAsFixed(2)}',
                                         style: const TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 16,
