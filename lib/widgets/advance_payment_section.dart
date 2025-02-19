@@ -20,55 +20,79 @@ class AdvancePaymentSection extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Advance Payment',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 16),
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Expanded(
-                      child: TextField(
-                        controller: advanceController,
-                        decoration: const InputDecoration(
-                          labelText: 'Advance Payment (%)',
-                          border: OutlineInputBorder(),
-                          suffixText: '%',
-                        ),
-                        keyboardType: TextInputType.number,
-                        onChanged: (value) {
-                          provider.updateAdvancePaymentPercentage(value);
-                        },
+                    const Text(
+                      'Advance Payment',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
+                    ),
+                    Row(
+                      children: [
+                        // const Text('Enable'),
+                        // const SizedBox(width: 8),
+                        Switch(
+                          value: provider.isAdvancePaymentEnabled,
+                          onChanged: (value) {
+                            provider.toggleAdvancePayment(value);
+                            if (!value) {
+                              advanceController.text = '';
+                            } else {
+                              advanceController.text = '50'; // Default value
+                            }
+                          },
+                        ),
+                      ],
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                if (provider.advancePaymentPercentage != null) ...[
+                if (provider.isAdvancePaymentEnabled) ...[
+                  const SizedBox(height: 16),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Advance Amount:'),
-                      Text(
-                        '₹${provider.advancePaymentAmount.toStringAsFixed(2)}',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      Expanded(
+                        child: TextField(
+                          controller: advanceController,
+                          decoration: const InputDecoration(
+                            labelText: 'Advance Payment (%)',
+                            border: OutlineInputBorder(),
+                            suffixText: '%',
+                          ),
+                          keyboardType: TextInputType.number,
+                          onChanged: (value) {
+                            provider.updateAdvancePaymentPercentage(value);
+                          },
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Balance Amount:'),
-                      Text(
-                        '₹${(provider.grandTotal - provider.advancePaymentAmount).toStringAsFixed(2)}',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
+                  const SizedBox(height: 16),
+                  if (provider.advancePaymentPercentage != null) ...[
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Advance Amount:'),
+                        Text(
+                          '₹${provider.advancePaymentAmount.toStringAsFixed(2)}',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Balance Amount:'),
+                        Text(
+                          '₹${(provider.grandTotal - provider.advancePaymentAmount).toStringAsFixed(2)}',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ],
             ),
