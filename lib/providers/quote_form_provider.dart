@@ -16,15 +16,23 @@ class QuoteFormProvider extends ChangeNotifier {
   int transportCharges = 0;
   int laborCharges = 0;
   int? _advancePaymentPercentage = 50;
+  bool _isAdvancePaymentEnabled = true;
 
   bool _isGstEnabled = false;
 
   bool get isGstEnabled => _isGstEnabled;
 
-  int? get advancePaymentPercentage => _advancePaymentPercentage;
+  bool get isAdvancePaymentEnabled => _isAdvancePaymentEnabled; // New getter
+  int? get advancePaymentPercentage =>
+      _isAdvancePaymentEnabled ? _advancePaymentPercentage : null;
 
   void toggleGst(bool value) {
     _isGstEnabled = value;
+    notifyListeners();
+  }
+    void toggleAdvancePayment(bool value) {
+    // New method
+    _isAdvancePaymentEnabled = value;
     notifyListeners();
   }
 
@@ -114,11 +122,12 @@ class QuoteFormProvider extends ChangeNotifier {
   }
 
   void updateAdvancePaymentPercentage(String value) {
+    if (!_isAdvancePaymentEnabled) return;
     try {
       _advancePaymentPercentage = int.tryParse(value);
       notifyListeners();
     } catch (e) {
-      _advancePaymentPercentage = 50; // Default to 50% on error
+      _advancePaymentPercentage = 50;
       notifyListeners();
     }
   }
