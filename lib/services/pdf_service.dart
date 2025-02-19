@@ -284,17 +284,21 @@ class PdfService {
       if (quote.laborCharges > 0)
         {'label': 'Labour Charges', 'amount': quote.laborCharges.toDouble()},
       {'label': 'Subtotal', 'amount': quote.subtotal},
-      // Only include GST items if GST is enabled
+
       if (quote.isGstEnabled) ...[
         {'label': 'CGST (9%)', 'amount': quote.cgst},
         {'label': 'SGST (9%)', 'amount': quote.sgst},
       ],
     ];
 
-    final advancePaymentPercentage = quote.advancePaymentPercentage ?? 50;
-    final advanceAmount =
-        (quote.grandTotal * advancePaymentPercentage / 100).round();
-    final remainingAmount = quote.grandTotal - advanceAmount;
+    final bool showAdvancePayment = quote.advancePaymentPercentage != null;
+    final advancePaymentPercentage = quote.advancePaymentPercentage ?? 0;
+    final advanceAmount = showAdvancePayment
+        ? (quote.grandTotal * advancePaymentPercentage / 100).round()
+        : 0;
+    final remainingAmount = showAdvancePayment
+        ? quote.grandTotal - advanceAmount
+        : quote.grandTotal;
 
     return pw.Row(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -336,9 +340,9 @@ class PdfService {
                             'On Delivery:',
                             remainingAmount.toStringAsFixed(2),
                           ),
-                          pw.SizedBox(height: 5),
+                          pw.SizedBox(height: 2),
                           pw.Divider(color: PdfColors.grey300),
-                          pw.SizedBox(height: 5),
+                          // pw.SizedBox(height: 5),
                           _buildPaymentRow(
                             'Total Amount:',
                             quote.grandTotal.toStringAsFixed(2),
