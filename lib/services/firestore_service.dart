@@ -1,5 +1,6 @@
-// firestore_service.dart
 // ignore_for_file: avoid_print
+
+import 'dart:math';
 
 import 'package:auto_quote/models/company_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -28,6 +29,81 @@ class FirestoreService {
     } catch (e) {
       print('Error getting user data: $e');
       rethrow;
+    }
+  }
+
+  Future<String> generateCompanyInviteCode(String companyId) async {
+    //? have to decide wheather to generate unique code or not and 
+    //? have to decide weather to for how long and also how to show it in app 
+    try {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      final random = Random();
+      final code =
+          List.generate(6, (index) => chars[random.nextInt(chars.length)])
+              .join();
+
+      // Create invite document
+      await _firestore.collection('companyInvites').doc(code).set({
+        'companyId': companyId,
+        'code': code,
+        'createdAt': FieldValue.serverTimestamp(),
+        'expiresAt':
+            Timestamp.fromDate(DateTime.now().add(const Duration(minutes: 1))),
+      });
+      return code;
+    } catch (e) {
+      print('Error generating invite code: $e');
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>?> verifyAndJoinCompany(String code, String userId) async {
+    try {
+      final inviteDoc = await _firestore.collection('companyInvites').doc(code).get();
+      
+      if (!inviteDoc.exists) {
+        return {'success': false, 'message': 'Invalid invite code'};
+      }
+
+      final inviteData = inviteDoc.data()!;
+      
+      // Check if code is expired
+      final expiresAt = inviteData['expiresAt'] as Timestamp;
+      if (expiresAt.toDate().isBefore(DateTime.now())) {
+        // Delete expired code
+        await _firestore.collection('companyInvites').doc(code).delete();
+        return {'success': false, 'message': 'Invite code has expired'};
+      }
+
+      // Get company data
+      final companyId = inviteData['companyId'] as String;
+      final companyDoc = await _firestore.collection('companies').doc(companyId).get();
+      
+      if (!companyDoc.exists) {
+        return {'success': false, 'message': 'Company no longer exists'};
+      }
+
+      final companyData = companyDoc.data()!;
+      
+      // Check if user is already a member
+      if ((companyData['memberIds'] as List).contains(userId)) {
+        return {'success': false, 'message': 'You are already a member of this company'};
+      }
+
+      // Join company
+      await joinCompany(companyId, userId);
+      
+
+      await _firestore.collection('companyInvites').doc(code).delete();
+
+      return {
+        'success': true,
+        'message': 'Successfully joined company',
+        'companyName': companyData['name'],
+      };
+    } catch (e) {
+      print('Error verifying invite code: $e');
+      return {'success': false, 'message': 'Error joining company: $e'};
     }
   }
 

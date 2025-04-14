@@ -1,13 +1,18 @@
+import 'dart:async';
 import 'dart:io';
+
+import 'package:auto_quote/screens/create_company_screen.dart';
+import 'package:auto_quote/screens/user_comapny_list.dart';
 import 'package:auto_quote/services/firebase_auth_service.dart';
+import 'package:auto_quote/services/firestore_service.dart';
+import 'package:auto_quote/models/company_model.dart';
+import 'package:auto_quote/widgets/company_invite_code.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/storage_service.dart';
 import 'package:provider/provider.dart';
 import 'package:open_file/open_file.dart';
-// import 'package:path_provider/path_provider.dart';
-// import 'package:url_launcher/url_launcher.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -18,13 +23,35 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final StorageService _storageService = StorageService();
+  final FirestoreService _firestoreService = FirestoreService();
   List<File> _pdfFiles = [];
   bool _isLoading = true;
+  List<Company>? _userCompanies;
+  StreamSubscription? _companiesSubscription;
 
   @override
   void initState() {
     super.initState();
     _loadPdfs();
+    _subscribeToUserCompanies();
+  }
+
+  @override
+  void dispose() {
+    _companiesSubscription?.cancel();
+    super.dispose();
+  }
+
+  void _subscribeToUserCompanies() {
+    final user = context.read<User?>();
+    if (user != null) {
+      _companiesSubscription =
+          _firestoreService.getUserCompanies(user.uid).listen((companies) {
+        setState(() {
+          _userCompanies = companies;
+        });
+      });
+    }
   }
 
   Future<void> _loadPdfs() async {
@@ -80,7 +107,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _openFileLocation(File file) async {
     try {
       if (Platform.isAndroid || Platform.isIOS) {
-        // Open the PDF file directly instead of the folder
         await OpenFile.open(file.path);
       } else {
         throw 'Platform not supported';
@@ -95,6 +121,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
         );
       }
     }
+  }
+
+  void _navigateToCreateCompany() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const CreateCompanyScreen(),
+      ),
+    );
+  }
+
+  void _navigateToJoinCompany() {
+    print('Join company button clicked');
+    // Will implement this later
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Join company feature coming soon')),
+    );
+  }
+
+  void _navigateToCompanyList() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const CompanyListScreen(),
+      ),
+    );
   }
 
   @override
@@ -133,98 +185,236 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                // User Profile Section
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      CircleAvatar(
-                        radius: 50,
-                        backgroundImage: user?.photoURL != null
-                            ? NetworkImage(user!.photoURL!)
-                            : null,
-                        child: user?.photoURL == null
-                            ? const Icon(Icons.person, size: 50)
-                            : null,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        user?.displayName ?? 'User',
-                        style: Theme.of(context).textTheme.headlineSmall,
-                      ),
-                      Text(
-                        user?.email ?? '',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                    ],
+          : SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // User Profile Section
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    width: double.infinity,
+                    child: Column(
+                      children: [
+                        CircleAvatar(
+                          radius: 50,
+                          backgroundImage: user?.photoURL != null
+                              ? NetworkImage(user!.photoURL!)
+                              : null,
+                          child: user?.photoURL == null
+                              ? const Icon(Icons.person, size: 50)
+                              : null,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          user?.displayName ?? 'User',
+                          style: Theme.of(context).textTheme.headlineSmall,
+                        ),
+                        Text(
+                          user?.email ?? '',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const Divider(),
-                // Saved Quotations Section
-                Expanded(
-                  child: _pdfFiles.isEmpty
-                      ? const Center(child: Text('No saved quotations found'))
-                      : ListView.builder(
-                          itemCount: _pdfFiles.length,
-                          itemBuilder: (context, index) {
-                            final file = _pdfFiles[index];
-                            final fileName = file.path.split('/').last;
-                            final fileDate = DateFormat('dd/MM/yyyy').format(
-                              file.lastModifiedSync(),
-                            );
+                  const Divider(),
 
-                            return ListTile(
-                              leading: const Icon(Icons.picture_as_pdf),
-                              title: Text(fileName),
-                              subtitle: Text('Created: $fileDate'),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.share),
-                                    onPressed: () =>
-                                        _storageService.sharePdf(file),
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete),
-                                    onPressed: () => showDialog(
-                                      context: context,
-                                      builder: (context) => AlertDialog(
-                                        title: const Text('Delete Quote'),
-                                        content: const Text(
-                                          'Are you sure you want to delete this quote?',
-                                        ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.pop(context),
-                                            child: const Text('Cancel'),
+                  // Company Section
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Companies',
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                            TextButton(
+                              onPressed: _navigateToCompanyList,
+                              child: Text(
+                                'See All',
+                                style: TextStyle(
+                                  color: Theme.of(context).primaryColor,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        // const GenerateInviteCodeScreen(company: widget.company),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: _navigateToCreateCompany,
+                                icon: const Icon(Icons.add_business),
+                                label: const Text('Create Company'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      Theme.of(context).primaryColor,
+                                  foregroundColor: Colors.white,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: _navigateToJoinCompany,
+                                icon: const Icon(Icons.group_add),
+                                label: const Text('Join Company'),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor:
+                                      Theme.of(context).primaryColor,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        // const SizedBox(height: 16),
+                        // Display user's companies
+                        // if (_userCompanies == null)
+                        //   const Center(child: CircularProgressIndicator())
+                        // else if (_userCompanies!.isEmpty)
+                        //   const Center(
+                        //     child: Text(
+                        //       'You are not a member of any company',
+                        //       style: TextStyle(fontStyle: FontStyle.italic),
+                        //     ),
+                        //   )
+                        // else
+                        // SizedBox(
+                        //   height: 120,
+                        //   child: ListView.builder(
+                        //     scrollDirection: Axis.horizontal,
+                        //     itemCount: _userCompanies!.length,
+                        //     itemBuilder: (context, index) {
+                        //       final company = _userCompanies![index];
+                        //       return Card(
+                        //         margin: const EdgeInsets.only(right: 12),
+                        //         child: InkWell(
+                        //           onTap: () {
+                        //             // Navigate to company details
+                        //           },
+                        //           child: Container(
+                        //             width: 150,
+                        //             padding: const EdgeInsets.all(12),
+                        //             child: Column(
+                        //               crossAxisAlignment:
+                        //                   CrossAxisAlignment.start,
+                        //               children: [
+                        //                 Text(
+                        //                   company.name,
+                        //                   style: const TextStyle(
+                        //                     fontWeight: FontWeight.bold,
+                        //                     fontSize: 16,
+                        //                   ),
+                        //                   maxLines: 1,
+                        //                   overflow: TextOverflow.ellipsis,
+                        //                 ),
+                        //                 const SizedBox(height: 8),
+                        //                 Text(
+                        //                   company.address,
+                        //                   maxLines: 1,
+                        //                   overflow: TextOverflow.ellipsis,
+                        //                 ),
+                        //                 const Spacer(),
+                        //                 Text(
+                        //                   '${company.memberIds.length} members',
+                        //                   style: const TextStyle(
+                        //                     color: Colors.grey,
+                        //                     fontSize: 12,
+                        //                   ),
+                        //                 ),
+                        //               ],
+                        //             ),
+                        //           ),
+                        //         ),
+                        //       );
+                        //     },
+                        //   ),
+                        // ),
+                      ],
+                    ),
+                  ),
+                  const Divider(),
+
+                  // Saved Quotations Section
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text(
+                      'Saved Quotations',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                  ),
+                  SizedBox(
+                    height: 400,
+                    child: _pdfFiles.isEmpty
+                        ? const Center(child: Text('No saved quotations found'))
+                        : ListView.builder(
+                            itemCount: _pdfFiles.length,
+                            shrinkWrap: true,
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            itemBuilder: (context, index) {
+                              final file = _pdfFiles[index];
+                              final fileName = file.path.split('/').last;
+                              final fileDate = DateFormat('dd/MM/yyyy').format(
+                                file.lastModifiedSync(),
+                              );
+
+                              return ListTile(
+                                leading: const Icon(Icons.picture_as_pdf),
+                                title: Text(fileName),
+                                subtitle: Text('Created: $fileDate'),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.share),
+                                      onPressed: () =>
+                                          _storageService.sharePdf(file),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete),
+                                      onPressed: () => showDialog(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                          title: const Text('Delete Quote'),
+                                          content: const Text(
+                                            'Are you sure you want to delete this quote?',
                                           ),
-                                          TextButton(
-                                            onPressed: () {
-                                              Navigator.pop(context);
-                                              _deletePdf(file);
-                                            },
-                                            child: const Text(
-                                              'Delete',
-                                              style:
-                                                  TextStyle(color: Colors.red),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () =>
+                                                  Navigator.pop(context),
+                                              child: const Text('Cancel'),
                                             ),
-                                          ),
-                                        ],
+                                            TextButton(
+                                              onPressed: () {
+                                                Navigator.pop(context);
+                                                _deletePdf(file);
+                                              },
+                                              child: const Text(
+                                                'Delete',
+                                                style: TextStyle(
+                                                    color: Colors.red),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                              onTap: () => _openFileLocation(file),
-                            );
-                          },
-                        ),
-                ),
-              ],
+                                  ],
+                                ),
+                                onTap: () => _openFileLocation(file),
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
             ),
     );
   }

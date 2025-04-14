@@ -43,13 +43,12 @@ class _QuotePreviewScreenState extends State<QuotePreviewScreen> {
             backgroundColor: Colors.green,
           ),
         );
-        
+
         // Navigator.pop(context);
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const ProfileScreen()),
         );
-
       }
     } catch (e) {
       if (mounted) {

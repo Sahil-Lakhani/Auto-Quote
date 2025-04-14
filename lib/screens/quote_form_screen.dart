@@ -82,7 +82,7 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
       _advanceController.addListener(() {
         if (provider.isAdvancePaymentEnabled) {
           provider.updateAdvancePaymentPercentage(_advanceController.text);
-        } 
+        }
       });
     });
   }
