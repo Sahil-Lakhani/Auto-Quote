@@ -7,11 +7,22 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../models/quote_model.dart';
 import '../services/pdf_service.dart';
 // import '../services/firebase_service.dart';
+import 'dart:io';
+import 'package:intl/intl.dart';
 
 class QuotePreviewScreen extends StatefulWidget {
   final Quote quote;
+  final bool isEditing;
+  final String? quoteId;
+  final File? quotationFile;
 
-  const QuotePreviewScreen({super.key, required this.quote});
+  const QuotePreviewScreen({
+    super.key,
+    required this.quote,
+    this.isEditing = false,
+    this.quoteId,
+    this.quotationFile,
+  });
 
   @override
   State<QuotePreviewScreen> createState() => _QuotePreviewScreenState();
@@ -34,21 +45,48 @@ class _QuotePreviewScreenState extends State<QuotePreviewScreen> {
 
       // Generate and save PDF
       final pdfBytes = await PdfService.generateQuote(widget.quote);
-      await StorageService().saveQuoteAndPdf(widget.quote, pdfBytes);
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Quotation saved successfully'),
-            backgroundColor: Colors.green,
-          ),
+      if (widget.isEditing &&
+          widget.quoteId != null &&
+          widget.quotationFile != null) {
+        // Update existing quotation
+        await StorageService().updateQuoteAndPdf(
+          widget.quoteId!,
+          widget.quote,
+          pdfBytes,
+          widget.quotationFile!,
         );
 
-        // Navigator.pop(context);
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const ProfileScreen()),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Quotation updated successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const ProfileScreen()),
+          );
+        }
+      } else {
+        // Create new quotation
+        await StorageService().saveQuoteAndPdf(widget.quote, pdfBytes);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Quotation saved successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const ProfileScreen()),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -72,7 +110,7 @@ class _QuotePreviewScreenState extends State<QuotePreviewScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Quote Preview'),
+        title: Text(widget.isEditing ? 'Edit Quote Preview' : 'Quote Preview'),
         actions: [
           // Save button with improved visibility
           _isSaving
@@ -90,17 +128,65 @@ class _QuotePreviewScreenState extends State<QuotePreviewScreen> {
                   ),
                 )
               : Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: ElevatedButton.icon(
-                    icon: const Icon(Icons.save),
-                    label: const Text('Save Quote'),
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      backgroundColor: Theme.of(context).primaryColor,
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).primaryColor,
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          spreadRadius: 1,
+                          blurRadius: 3,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
                     ),
-                    onPressed: _saveQuotation,
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: _saveQuotation,
+                        borderRadius: BorderRadius.circular(8),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0,
+                            vertical: 8.0,
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                widget.isEditing ? Icons.update : Icons.save,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                widget.isEditing ? 'Update' : 'Save',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
+          // Add print button
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: IconButton(
+              onPressed: () {
+                Printing.layoutPdf(
+                  onLayout: (format) => PdfService.generateQuote(widget.quote),
+                );
+              },
+              icon: const Icon(Icons.print),
+              tooltip: 'Print Quote',
+            ),
+          ),
         ],
       ),
       body: PdfPreview(

@@ -14,7 +14,18 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
 class QuoteFormScreen extends StatefulWidget {
-  const QuoteFormScreen({super.key});
+  final bool isEditing;
+  final String? quoteId;
+  final File? quotationFile;
+  final Quote? existingQuote;
+
+  const QuoteFormScreen({
+    super.key,
+    this.isEditing = false,
+    this.quoteId,
+    this.quotationFile,
+    this.existingQuote,
+  });
 
   @override
   State<QuoteFormScreen> createState() => _QuoteFormScreenState();
@@ -43,26 +54,72 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = context.read<QuoteFormProvider>();
-      _companyController.text = provider.companyName;
-      _addressController.text = provider.address;
-      _phoneController.text = provider.phone;
-      _customerController.text = provider.customerName;
-      _customerphoneController.text = provider.customerPhone;
-      _dateController.text = provider.date;
-      _transportController.text = provider.transportCharges.toString();
-      _labourController.text = provider.laborCharges.toString();
-      _advanceController.text =
-          provider.advancePaymentPercentage?.toString() ?? '50';
+
+      // Initialize provider with default values if not editing
+      if (!widget.isEditing) {
+        provider.clearForm();
+        provider.toggleGst(false);
+        provider.toggleAdvancePayment(true);
+      }
+
+      // If editing, initialize form with existing quote data
+      if (widget.isEditing && widget.existingQuote != null) {
+        final quote = widget.existingQuote!;
+
+        // Pre-fill the provider with existing quote data
+        provider.companyName = quote.companyName;
+        provider.address = quote.address;
+        provider.phone = quote.phone;
+        provider.customerName = quote.clientName;
+        provider.date = DateFormat('dd/MM/yyyy').format(quote.date);
+        provider.rooms = List.from(quote.sections); // Create a copy of the list
+        provider.transportCharges = quote.transportCharges;
+        provider.laborCharges = quote.laborCharges;
+        provider.toggleGst(quote.isGstEnabled);
+
+        // The company info fields should be read-only when editing
+        _companyController.text = provider.companyName;
+        _addressController.text = provider.address;
+        _phoneController.text = provider.phone;
+        _customerController.text = provider.customerName;
+        _customerphoneController.text = provider.customerPhone;
+        _dateController.text = provider.date;
+        _transportController.text = provider.transportCharges.toString();
+        _labourController.text = provider.laborCharges.toString();
+        _advanceController.text =
+            provider.advancePaymentPercentage?.toString() ?? '50';
+      } else {
+        // Regular initialization for new quotes
+        _companyController.text = provider.companyName;
+        _addressController.text = provider.address;
+        _phoneController.text = provider.phone;
+        _customerController.text = provider.customerName;
+        _customerphoneController.text = provider.customerPhone;
+        _dateController.text = provider.date;
+        _transportController.text = provider.transportCharges.toString();
+        _labourController.text = provider.laborCharges.toString();
+        _advanceController.text =
+            provider.advancePaymentPercentage?.toString() ?? '50';
+      }
 
       // Setup listeners
       _companyController.addListener(() {
-        provider.updateCompanyName(_companyController.text);
+        if (!widget.isEditing) {
+          // Only allow company edits if not editing
+          provider.updateCompanyName(_companyController.text);
+        }
       });
       _addressController.addListener(() {
-        provider.updateAddress(_addressController.text);
+        if (!widget.isEditing) {
+          // Only allow address edits if not editing
+          provider.updateAddress(_addressController.text);
+        }
       });
       _phoneController.addListener(() {
-        provider.updatePhone(_phoneController.text);
+        if (!widget.isEditing) {
+          // Only allow phone edits if not editing
+          provider.updatePhone(_phoneController.text);
+        }
       });
       _customerController.addListener(() {
         provider.updateCustomerName(_customerController.text);
@@ -254,7 +311,7 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create Quote'),
+        title: Text(widget.isEditing ? 'Edit Quote' : 'Create Quote'),
         actions: [
           IconButton(
             icon: const Icon(Icons.preview),
@@ -263,7 +320,12 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => QuotePreviewScreen(quote: quote),
+                  builder: (context) => QuotePreviewScreen(
+                    quote: quote,
+                    isEditing: widget.isEditing,
+                    quoteId: widget.quoteId,
+                    quotationFile: widget.quotationFile,
+                  ),
                 ),
               );
             },
@@ -285,7 +347,30 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                   addressController: _addressController,
                   phoneController: _phoneController,
                   pickLogo: _pickLogo,
+                  isReadOnly: widget
+                      .isEditing, // Make company info read-only when editing
                 ),
+                if (widget.isEditing)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Row(
+                      children: [
+                        const Expanded(child: Divider(thickness: 1)),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Text(
+                            'Editable Information',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontWeight: FontWeight.w500,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                        const Expanded(child: Divider(thickness: 1)),
+                      ],
+                    ),
+                  ),
                 const SizedBox(height: 16),
                 CustomerInfoSection(
                   customerController: _customerController,

@@ -117,4 +117,61 @@ class StorageService {
       await file.delete();
     }
   }
+
+  // Update existing PDF and quotation data in Firebase
+  Future<void> updateQuoteAndPdf(
+    String quoteId,
+    Quote quote,
+    List<int> pdfBytes,
+    File quotationFile,
+  ) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) throw Exception('No user logged in');
+
+    // Get the directory path from the existing file
+    final directory = quotationFile.parent;
+    final DateTime now = DateTime.now();
+    final String dateStr =
+        '${now.day.toString().padLeft(2, '0')}${now.month.toString().padLeft(2, '0')}${now.year}';
+    final fileName = '${quote.clientName}_$dateStr.pdf';
+
+    // Create a new file or overwrite the existing one
+    final file = File('${directory.path}/$fileName');
+    await file.writeAsBytes(pdfBytes);
+
+    // Update the document in Firestore
+    await _firestore.collection('quotations').doc(quoteId).update({
+      'clientName': quote.clientName,
+      'date': quote.date,
+      'sections': quote.sections
+          .map((section) => {
+                'title': section.title,
+                'roomTotal': section.roomTotal,
+                'items': section.items
+                    .map((item) => {
+                          'description': item.description,
+                          'dimensions': item.dimensions,
+                          'quantity': item.quantity,
+                          'unitPrice': item.unitPrice,
+                          'totalPrice': item.totalPrice,
+                        })
+                    .toList(),
+              })
+          .toList(),
+      'transportCharges': quote.transportCharges,
+      'laborCharges': quote.laborCharges,
+      'subtotal': quote.subtotal,
+      'isGstEnabled': quote.isGstEnabled,
+      'cgst': quote.cgst,
+      'sgst': quote.sgst,
+      'grandTotal': quote.grandTotal,
+      'pdfPath': file.path,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+
+    // If the filename changed, delete the old file
+    if (quotationFile.path != file.path && await quotationFile.exists()) {
+      await quotationFile.delete();
+    }
+  }
 }

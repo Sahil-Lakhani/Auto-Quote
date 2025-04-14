@@ -13,6 +13,9 @@ import 'package:intl/intl.dart';
 import '../services/storage_service.dart';
 import 'package:provider/provider.dart';
 import 'package:open_file/open_file.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:auto_quote/models/quote_model.dart';
+import 'package:auto_quote/screens/quote_form_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -147,6 +150,90 @@ class _ProfileScreenState extends State<ProfileScreen> {
         builder: (context) => const CompanyListScreen(),
       ),
     );
+  }
+
+  Future<void> _editQuotation(File file) async {
+    setState(() => _isLoading = true);
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) throw Exception('No user logged in');
+
+      // Get quotation data from Firebase using the file path
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('quotations')
+          .where('userId', isEqualTo: user.uid)
+          .where('pdfPath', isEqualTo: file.path)
+          .get();
+
+      if (querySnapshot.docs.isEmpty) {
+        throw Exception('Quotation not found');
+      }
+
+      final quotationDoc = querySnapshot.docs.first;
+      final quotationData = quotationDoc.data();
+
+      // Create a Quote object from the data
+      final List<QuoteRoomType> sections = [];
+      for (final sectionData in quotationData['sections'] as List<dynamic>) {
+        final List<QuoteItem> items = [];
+        for (final itemData in sectionData['items'] as List<dynamic>) {
+          items.add(QuoteItem(
+            description: itemData['description'] as String,
+            dimensions: itemData['dimensions'] as String?,
+            quantity: itemData['quantity'] as int?,
+            unitPrice: (itemData['unitPrice'] as num).toDouble(),
+            totalPrice: (itemData['totalPrice'] as num).toDouble(),
+          ));
+        }
+        sections.add(QuoteRoomType(
+          title: sectionData['title'] as String,
+          items: items,
+          roomTotal: (sectionData['roomTotal'] as num).toDouble(),
+        ));
+      }
+
+      final quote = Quote(
+        companyName: quotationData['companyName'] as String,
+        address: quotationData['address'] ?? '',
+        phone: quotationData['phone'] ?? '',
+        clientName: quotationData['clientName'] as String,
+        date: (quotationData['date'] as Timestamp).toDate(),
+        sections: sections,
+        transportCharges: quotationData['transportCharges'] as int,
+        laborCharges: quotationData['laborCharges'] as int,
+        subtotal: (quotationData['subtotal'] as num).toDouble(),
+        isGstEnabled: quotationData['isGstEnabled'] as bool,
+        cgst: (quotationData['cgst'] as num).toDouble(),
+        sgst: (quotationData['sgst'] as num).toDouble(),
+        grandTotal: (quotationData['grandTotal'] as num).toDouble(),
+      );
+
+      // Navigate to the edit screen with the quotation document ID
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => QuoteFormScreen(
+              isEditing: true,
+              quoteId: quotationDoc.id,
+              quotationFile: file,
+              existingQuote: quote,
+            ),
+          ),
+        ).then((_) => _loadPdfs()); // Refresh PDFs when returning
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error loading quotation: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -365,12 +452,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               );
 
                               return ListTile(
-                                leading: const Icon(Icons.picture_as_pdf),
-                                title: Text(fileName),
+                                leading: const Icon(Icons.picture_as_pdf, size: 32,),
+                                title: Text(fileName, style: const TextStyle(fontSize:14)),
                                 subtitle: Text('Created: $fileDate'),
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.edit),
+                                      onPressed: () => _editQuotation(file),
+                                      tooltip: 'Edit Quotation',
+                                    ),
                                     IconButton(
                                       icon: const Icon(Icons.share),
                                       onPressed: () =>
