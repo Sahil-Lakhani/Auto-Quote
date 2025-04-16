@@ -4,11 +4,13 @@ import '../models/product_model.dart';
 class ProductForm extends StatefulWidget {
   final Product? product;
   final Function(Product) onSave;
+  final String? companyId;
 
   const ProductForm({
     super.key,
     this.product,
     required this.onSave,
+    this.companyId,
   });
 
   @override
@@ -183,7 +185,8 @@ class _ProductFormState extends State<ProductForm> {
       print('Width: ${width.formatted}');
       print('Price per sqft: ₹${_pricePerSqftController.text}');
     } else {
-      print('Creating standalone product with price: ₹${_priceController.text}');
+      print(
+          'Creating standalone product with price: ₹${_priceController.text}');
     }
 
     // Depth is optional for both types
@@ -198,6 +201,7 @@ class _ProductFormState extends State<ProductForm> {
     return Product(
       id: widget.product?.id,
       userId: widget.product?.userId,
+      companyId: widget.companyId ?? widget.product?.companyId,
       name: _nameController.text,
       type: _selectedType,
       price: _selectedType == ProductType.standalone

@@ -4,7 +4,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'screens/quote_form_screen.dart';
 import 'screens/product_form_screen.dart';
-import 'screens/template_selection_screen.dart';
 import 'screens/login_screen.dart';
 import 'package:auto_quote/providers/quote_form_provider.dart';
 import 'package:provider/provider.dart';
@@ -42,7 +41,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      home: AuthenticationWrapper(),
+      home: const AuthenticationWrapper(),
     );
   }
 }

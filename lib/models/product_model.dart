@@ -4,7 +4,7 @@ class Dimension {
   final int feet;
   final int inches;
 
-  const Dimension({required this.feet, this.inches=0});
+  const Dimension({required this.feet, this.inches = 0});
 
   String get formatted => '${feet}\'${inches}"';
 
@@ -37,7 +37,7 @@ class Dimension {
     final inches = int.tryParse(parts[1].replaceAll('"', ""));
 
     if (feet == null) return null;
-    return Dimension(feet: feet, inches: inches??0);
+    return Dimension(feet: feet, inches: inches ?? 0);
   }
 }
 
@@ -46,6 +46,7 @@ enum ProductType { dimensionBased, standalone }
 class Product {
   final String? id;
   final String? userId;
+  final String? companyId;
   final String name;
   final ProductType type;
   final double? pricePerSqft;
@@ -67,6 +68,7 @@ class Product {
   Product({
     this.id,
     this.userId,
+    this.companyId,
     required this.name,
     required this.type,
     double? price,
@@ -101,6 +103,7 @@ class Product {
   Map<String, dynamic> toMap() {
     return {
       if (userId != null) 'userId': userId,
+      if (companyId != null) 'companyId': companyId,
       'name': name,
       'type': type.toString(),
       'price': price, // Store the actual price value
@@ -127,6 +130,7 @@ class Product {
       return Product(
         id: doc.id,
         userId: data['userId'] ?? '',
+        companyId: data['companyId'],
         name: data['name'] ?? '',
         type: type,
         price: (data['price'] ?? 0).toDouble(),
@@ -137,6 +141,7 @@ class Product {
       return Product(
         id: doc.id,
         userId: data['userId'] ?? '',
+        companyId: data['companyId'],
         name: data['name'] ?? '',
         type: type,
         price: (data['price'] ?? 0).toDouble(), // Use stored price
@@ -167,6 +172,7 @@ class Product {
       return Product(
         id: docId,
         userId: map['userId'] ?? '',
+        companyId: map['companyId'],
         name: map['name'] ?? '',
         type: type,
         price: (map['price'] ?? 0).toDouble(),
@@ -177,6 +183,7 @@ class Product {
       return Product(
         id: docId,
         userId: map['userId'] ?? '',
+        companyId: map['companyId'],
         name: map['name'] ?? '',
         type: type,
         price: (map['price'] ?? 0).toDouble(), // Use stored price

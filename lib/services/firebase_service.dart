@@ -8,7 +8,7 @@ class FirebaseService {
   final String quotationsCollection = 'quotations';
   final String productsCollection = 'products';
 
-  // Add a new product with user ID
+  // Add a new product with user ID and company ID
   Future<String> addProduct(Product product) async {
     try {
       // Get current user
@@ -19,6 +19,11 @@ class FirebaseService {
       final productData = product.toMap();
       productData['userId'] = user.uid;
 
+      // Make sure companyId is included if provided
+      if (product.companyId != null) {
+        productData['companyId'] = product.companyId;
+      }
+
       DocumentReference docRef =
           await _firestore.collection(productsCollection).add(productData);
 
@@ -28,16 +33,21 @@ class FirebaseService {
     }
   }
 
-  // Get only the current user's products
-  Stream<List<Product>> getProducts() {
+  // Get only the current user's products, optionally filtered by company
+  Stream<List<Product>> getProducts({String? companyId}) {
     final user = _auth.currentUser;
     if (user == null) return Stream.value([]);
 
-    return _firestore
+    Query query = _firestore
         .collection(productsCollection)
-        .where('userId', isEqualTo: user.uid)
-        .snapshots()
-        .map((snapshot) {
+        .where('userId', isEqualTo: user.uid);
+
+    // Add company filter if specified
+    if (companyId != null) {
+      query = query.where('companyId', isEqualTo: companyId);
+    }
+
+    return query.snapshots().map((snapshot) {
       return snapshot.docs.map((doc) => Product.fromFirestore(doc)).toList();
     });
   }
@@ -83,18 +93,25 @@ class FirebaseService {
     }
   }
 
-  // Search within user's products
-  Stream<List<Product>> searchProducts(String query) {
+  // Search within user's products and optionally filter by company
+  Stream<List<Product>> searchProducts(String query, {String? companyId}) {
     final user = _auth.currentUser;
     if (user == null) return Stream.value([]);
 
-    return _firestore
+    Query queryRef = _firestore
         .collection(productsCollection)
-        .where('userId', isEqualTo: user.uid)
+        .where('userId', isEqualTo: user.uid);
+
+    // Add company filter if specified
+    if (companyId != null) {
+      queryRef = queryRef.where('companyId', isEqualTo: companyId);
+    }
+
+    queryRef = queryRef
         .where('name', isGreaterThanOrEqualTo: query)
-        .where('name', isLessThanOrEqualTo: query + '\uf8ff')
-        .snapshots()
-        .map((snapshot) {
+        .where('name', isLessThanOrEqualTo: query + '\uf8ff');
+
+    return queryRef.snapshots().map((snapshot) {
       return snapshot.docs.map((doc) => Product.fromFirestore(doc)).toList();
     });
   }
