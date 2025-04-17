@@ -180,22 +180,25 @@ class _ProductFormState extends State<ProductForm> {
             ? '0'
             : _widthInchesController.text),
       );
+
+      // Depth is optional but only for dimension-based products
+      if (_depthFeetController.text.isNotEmpty) {
+        depth = Dimension(
+          feet: int.parse(_depthFeetController.text),
+          inches: int.parse(_depthInchesController.text.isEmpty
+              ? '0'
+              : _depthInchesController.text),
+        );
+      }
+
       print('Creating dimension-based product:');
       print('Height: ${height.formatted}');
       print('Width: ${width.formatted}');
+      if (depth != null) print('Depth: ${depth.formatted}');
       print('Price per sqft: ₹${_pricePerSqftController.text}');
     } else {
       print(
           'Creating standalone product with price: ₹${_priceController.text}');
-    }
-
-    // Depth is optional for both types
-    if (_depthFeetController.text.isNotEmpty &&
-        _depthInchesController.text.isNotEmpty) {
-      depth = Dimension(
-        feet: int.parse(_depthFeetController.text),
-        inches: int.parse(_depthInchesController.text),
-      );
     }
 
     return Product(
@@ -320,13 +323,13 @@ class _ProductFormState extends State<ProductForm> {
                 _widthInchesController,
                 required: true,
               ),
+              const SizedBox(height: 16),
+              _buildDimensionFields(
+                'Depth',
+                _depthFeetController,
+                _depthInchesController,
+              ),
             ],
-            const SizedBox(height: 16),
-            _buildDimensionFields(
-              'Depth',
-              _depthFeetController,
-              _depthInchesController,
-            ),
             const SizedBox(height: 16),
             TextFormField(
               controller: _descriptionController,

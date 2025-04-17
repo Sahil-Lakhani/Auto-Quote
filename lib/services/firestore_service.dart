@@ -4,6 +4,8 @@ import 'dart:math';
 
 import 'package:auto_quote/models/company_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:typed_data';
 
 class FirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -33,8 +35,8 @@ class FirestoreService {
   }
 
   Future<String> generateCompanyInviteCode(String companyId) async {
-    //? have to decide wheather to generate unique code or not and 
-    //? have to decide weather to for how long and also how to show it in app 
+    //? have to decide wheather to generate unique code or not and
+    //? have to decide weather to for how long and also how to show it in app
     try {
       const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
       final random = Random();
@@ -57,16 +59,18 @@ class FirestoreService {
     }
   }
 
-  Future<Map<String, dynamic>?> verifyAndJoinCompany(String code, String userId) async {
+  Future<Map<String, dynamic>?> verifyAndJoinCompany(
+      String code, String userId) async {
     try {
-      final inviteDoc = await _firestore.collection('companyInvites').doc(code).get();
-      
+      final inviteDoc =
+          await _firestore.collection('companyInvites').doc(code).get();
+
       if (!inviteDoc.exists) {
         return {'success': false, 'message': 'Invalid invite code'};
       }
 
       final inviteData = inviteDoc.data()!;
-      
+
       // Check if code is expired
       final expiresAt = inviteData['expiresAt'] as Timestamp;
       if (expiresAt.toDate().isBefore(DateTime.now())) {
@@ -77,22 +81,25 @@ class FirestoreService {
 
       // Get company data
       final companyId = inviteData['companyId'] as String;
-      final companyDoc = await _firestore.collection('companies').doc(companyId).get();
-      
+      final companyDoc =
+          await _firestore.collection('companies').doc(companyId).get();
+
       if (!companyDoc.exists) {
         return {'success': false, 'message': 'Company no longer exists'};
       }
 
       final companyData = companyDoc.data()!;
-      
+
       // Check if user is already a member
       if ((companyData['memberIds'] as List).contains(userId)) {
-        return {'success': false, 'message': 'You are already a member of this company'};
+        return {
+          'success': false,
+          'message': 'You are already a member of this company'
+        };
       }
 
       // Join company
       await joinCompany(companyId, userId);
-      
 
       await _firestore.collection('companyInvites').doc(code).delete();
 
@@ -110,33 +117,23 @@ class FirestoreService {
   Future<String> createCompany({
     required String name,
     required String ownerId,
-    required String address ,
-    required String phone ,
-    String gstNumber = '',
+    required String address,
+    required String gstNumber,
+    required String phone,
+    Uint8List? logoBytes,
   }) async {
-    try {
-      final company = {
-        'name': name,
-        'ownerId': ownerId,
-        'address': address,
-        'phone': phone,
-        'gstNumber': gstNumber,
-        'memberIds': [ownerId],
-        'createdAt': FieldValue.serverTimestamp(),
-      };
-
-      final docRef = await _firestore.collection('companies').add(company);
-
-      // Update user's companies list
-      await _firestore.collection('users').doc(ownerId).update({
-        'companies': FieldValue.arrayUnion([docRef.id])
-      });
-
-      return docRef.id;
-    } catch (e) {
-      print('Error creating company: $e');
-      rethrow;
-    }
+    final companyRef = _firestore.collection('companies').doc();
+    await companyRef.set({
+      'name': name,
+      'ownerId': ownerId,
+      'address': address,
+      'gstNumber': gstNumber,
+      'phone': phone,
+      'logoBytes': logoBytes,
+      'createdAt': FieldValue.serverTimestamp(),
+      'memberIds': [ownerId],
+    });
+    return companyRef.id;
   }
 
   Future<void> deleteCompany(String companyId) async {
