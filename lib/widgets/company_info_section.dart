@@ -7,7 +7,6 @@ class CompanyInfoSection extends StatelessWidget {
   // final TextEditingController addressController;
   // final TextEditingController phoneController;
   final Function() pickLogo;
-  final bool isReadOnly;
 
   const CompanyInfoSection({
     super.key,
@@ -15,7 +14,6 @@ class CompanyInfoSection extends StatelessWidget {
     // required this.addressController,
     // required this.phoneController,
     required this.pickLogo,
-    this.isReadOnly = false,
   });
 
   Widget _buildLogoPreview(BuildContext context) {
@@ -27,9 +25,6 @@ class CompanyInfoSection extends StatelessWidget {
           decoration: BoxDecoration(
             border: Border.all(color: Colors.grey[300]!),
             borderRadius: BorderRadius.circular(8),
-            color: isReadOnly && provider.logoFile == null
-                ? Colors.grey[100]
-                : null,
           ),
           child: provider.logoFile != null
               ? Stack(
@@ -48,7 +43,6 @@ class CompanyInfoSection extends StatelessWidget {
                         ),
                       ),
                     ),
-                    if (!isReadOnly)
                       Positioned(
                         top: 8,
                         right: 8,
@@ -78,13 +72,10 @@ class CompanyInfoSection extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
-                        isReadOnly
-                            ? Icons.photo_outlined
-                            : Icons.add_photo_alternate_outlined,
+                        Icons.add_photo_alternate_outlined,
                         size: 32,
                         color: Colors.grey[600],
                       ),
-                      if (!isReadOnly)
                         TextButton(
                           onPressed: pickLogo,
                           style: TextButton.styleFrom(
@@ -94,14 +85,6 @@ class CompanyInfoSection extends StatelessWidget {
                             ),
                           ),
                           child: const Text('Choose File'),
-                        ),
-                      if (isReadOnly)
-                        Text(
-                          'No company logo',
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 12,
-                          ),
                         ),
                     ],
                   ),
@@ -114,31 +97,22 @@ class CompanyInfoSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: isReadOnly ? Colors.grey[50] : Colors.white,
+      color: Colors.white,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
+            const Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'Company Information',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                if (isReadOnly)
-                  Text(
-                    'Cannot be edited',
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontStyle: FontStyle.italic,
-                      fontSize: 12,
-                    ),
-                  ),
               ],
             ),
             const SizedBox(height: 16),
