@@ -1,7 +1,9 @@
 import 'dart:typed_data';
+import 'dart:async';
 import 'package:auto_quote/models/quote_model.dart';
 import 'package:auto_quote/providers/quote_form_provider.dart';
 import 'package:auto_quote/screens/quote_preview_screen.dart';
+import 'package:auto_quote/screens/create_company_screen.dart';
 import 'package:auto_quote/widgets/advance_payment_section.dart';
 import 'package:auto_quote/widgets/company_info_section.dart';
 import 'package:auto_quote/widgets/customer_info_section.dart';
@@ -12,6 +14,9 @@ import 'package:provider/provider.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:auto_quote/models/company_model.dart';
+import 'package:auto_quote/services/firestore_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class QuoteFormScreen extends StatefulWidget {
   final bool isEditing;
@@ -42,25 +47,17 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
   final _transportController = TextEditingController();
   final _labourController = TextEditingController();
   final _advanceController = TextEditingController();
-
-  // final FirebaseService _firebaseService = FirebaseService();
-  // final Map<int, Product?> _selectedProducts = {};
-  // final Set<int> _roomsInAddMode = {};
   final ImagePicker _picker = ImagePicker();
-  // File? _logoFile;
+  final FirestoreService _firestoreService = FirestoreService();
+  List<Company>? _userCompanies;
+  StreamSubscription? _companiesSubscription;
 
   @override
   void initState() {
     super.initState();
+    _loadUserCompanies();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = context.read<QuoteFormProvider>();
-
-      // Initialize provider with default values if not editing
-      if (!widget.isEditing) {
-        provider.clearForm();
-        provider.toggleGst(false);
-        provider.toggleAdvancePayment(true);
-      }
 
       // If editing, initialize form with existing quote data
       if (widget.isEditing && widget.existingQuote != null) {
@@ -72,7 +69,7 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
         provider.phone = quote.phone;
         provider.customerName = quote.clientName;
         provider.date = DateFormat('dd/MM/yyyy').format(quote.date);
-        provider.rooms = List.from(quote.sections); // Create a copy of the list
+        provider.rooms = List.from(quote.sections);
         provider.transportCharges = quote.transportCharges;
         provider.laborCharges = quote.laborCharges;
         provider.toggleGst(quote.isGstEnabled);
@@ -105,19 +102,16 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
       // Setup listeners
       _companyController.addListener(() {
         if (!widget.isEditing) {
-          // Only allow company edits if not editing
           provider.updateCompanyName(_companyController.text);
         }
       });
       _addressController.addListener(() {
         if (!widget.isEditing) {
-          // Only allow address edits if not editing
           provider.updateAddress(_addressController.text);
         }
       });
       _phoneController.addListener(() {
         if (!widget.isEditing) {
-          // Only allow phone edits if not editing
           provider.updatePhone(_phoneController.text);
         }
       });
@@ -144,8 +138,37 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
     });
   }
 
+  void _loadUserCompanies() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      _companiesSubscription =
+          _firestoreService.getUserCompanies(user.uid).listen((companies) {
+        setState(() {
+          _userCompanies = companies;
+          final provider = context.read<QuoteFormProvider>();
+          if (provider.selectedCompany != null) {
+            final selectedCompanyId = provider.selectedCompany!.id;
+            final companyExists =
+                companies.any((company) => company.id == selectedCompanyId);
+
+            if (!companyExists) {
+              // If the selected company doesn't exist in the new list, reset it
+              provider.clearCompanySelection();
+            } else {
+              // Update the selected company with the new instance from the list
+              final updatedCompany = companies
+                  .firstWhere((company) => company.id == selectedCompanyId);
+              provider.selectCompany(updatedCompany);
+            }
+          }
+        });
+      });
+    }
+  }
+
   @override
   void dispose() {
+    _companiesSubscription?.cancel();
     _companyController.dispose();
     _addressController.dispose();
     _phoneController.dispose();
@@ -156,6 +179,119 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
     _transportController.dispose();
     _labourController.dispose();
     super.dispose();
+  }
+
+  Widget _buildCompanySelection() {
+    return Consumer<QuoteFormProvider>(
+      builder: (context, provider, child) {
+        return Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Select Company',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                if (_userCompanies == null)
+                  const Center(child: CircularProgressIndicator())
+                else if (_userCompanies!.isEmpty)
+                  Center(
+                    child: Column(
+                      children: [
+                        const Text(
+                          'No companies found. Please create a company first.',
+                          style: TextStyle(fontStyle: FontStyle.italic),
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const CreateCompanyScreen(),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.add_business),
+                          label: const Text('Create Company'),
+                        ),
+                      ],
+                    ),
+                  )
+                else
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      DropdownButtonFormField<Company>(
+                        value: provider.selectedCompany != null &&
+                                _userCompanies!.any(
+                                    (c) => c.id == provider.selectedCompany!.id)
+                            ? _userCompanies!.firstWhere(
+                                (c) => c.id == provider.selectedCompany!.id)
+                            : null,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          labelText: 'Choose Company',
+                          hintText: 'Select a company from the list',
+                        ),
+                        items: _userCompanies!.map((company) {
+                          return DropdownMenuItem<Company>(
+                            value: company,
+                            child: Text(company.name),
+                          );
+                        }).toList(),
+                        onChanged: (company) {
+                          if (company != null) {
+                            provider.selectCompany(company);
+                            _companyController.text = company.name;
+                            _addressController.text = company.address;
+                            _phoneController.text = company.phone;
+                          } else {
+                            provider.clearCompanySelection();
+                            _companyController.clear();
+                            _addressController.clear();
+                            _phoneController.clear();
+                          }
+                        },
+                      ),
+                      if (provider.selectedCompany != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Text(
+                            'Selected: ${provider.selectedCompany!.name}',
+                            style: TextStyle(
+                              color: Colors.green[700],
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      // if (provider.hasSelectedCompany && !provider.hasLogo)
+                      //   Padding(
+                      //     padding: const EdgeInsets.only(top: 8.0),
+                      //     child: Text(
+                      //       'Please upload a logo for the selected company',
+                      //       style: TextStyle(
+                      //         color: Colors.red[700],
+                      //         fontSize: 12,
+                      //       ),
+                      //     ),
+                      //   ),
+                    ],
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   void _addRoom() {
@@ -182,14 +318,14 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
       final logoFile = File(image.path);
       context.read<QuoteFormProvider>().updateLogo(logoFile);
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Logo added successfully'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
+      // if (mounted) {
+      //   ScaffoldMessenger.of(context).showSnackBar(
+      //     const SnackBar(
+      //       content: Text('Logo added successfully'),
+      //       backgroundColor: Colors.green,
+      //     ),
+      //   );
+      // }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -202,64 +338,64 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
     }
   }
 
-  Widget _buildLogoPreview() {
-    return Consumer<QuoteFormProvider>(
-      builder: (context, provider, child) {
-        return Container(
-          height: 128,
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: provider.logoFile != null
-              ? Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.file(
-                        provider.logoFile!,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    Positioned(
-                      top: 4,
-                      right: 4,
-                      child: Container(
-                        width: 34,
-                        height: 34,
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.6),
-                          border: Border.all(color: Colors.white, width: 1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: IconButton(
-                          icon: const Icon(
-                            Icons.close,
-                            color: Colors.white,
-                            size: 16,
-                          ),
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          onPressed: () {
-                            provider.removeLogo();
-                          },
-                        ),
-                      ),
-                    ),
-                  ],
-                )
-              : Center(
-                  child: TextButton.icon(
-                    onPressed: _pickLogo,
-                    icon: const Icon(Icons.add_photo_alternate),
-                    label: const Text('Add Logo'),
-                  ),
-                ),
-        );
-      },
-    );
-  }
+  // Widget _buildLogoPreview() {
+  //   return Consumer<QuoteFormProvider>(
+  //     builder: (context, provider, child) {
+  //       return Container(
+  //         height: 128,
+  //         decoration: BoxDecoration(
+  //           border: Border.all(color: Colors.grey),
+  //           borderRadius: BorderRadius.circular(8),
+  //         ),
+  //         child: provider.logoFile != null
+  //             ? Stack(
+  //                 fit: StackFit.expand,
+  //                 children: [
+  //                   ClipRRect(
+  //                     borderRadius: BorderRadius.circular(8),
+  //                     child: Image.file(
+  //                       provider.logoFile!,
+  //                       fit: BoxFit.cover,
+  //                     ),
+  //                   ),
+  //                   Positioned(
+  //                     top: 4,
+  //                     right: 4,
+  //                     child: Container(
+  //                       width: 34,
+  //                       height: 34,
+  //                       decoration: BoxDecoration(
+  //                         color: Colors.black.withOpacity(0.6),
+  //                         border: Border.all(color: Colors.white, width: 1),
+  //                         shape: BoxShape.circle,
+  //                       ),
+  //                       child: IconButton(
+  //                         icon: const Icon(
+  //                           Icons.close,
+  //                           color: Colors.white,
+  //                           size: 16,
+  //                         ),
+  //                         padding: EdgeInsets.zero,
+  //                         constraints: const BoxConstraints(),
+  //                         onPressed: () {
+  //                           provider.removeLogo();
+  //                         },
+  //                       ),
+  //                     ),
+  //                   ),
+  //                 ],
+  //               )
+  //             : Center(
+  //                 child: TextButton.icon(
+  //                   onPressed: _pickLogo,
+  //                   icon: const Icon(Icons.add_photo_alternate),
+  //                   label: const Text('Add Logo'),
+  //                 ),
+  //               ),
+  //       );
+  //     },
+  //   );
+  // }
 
   Quote _createQuote() {
     final provider = context.read<QuoteFormProvider>();
@@ -269,11 +405,16 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
       logoBytes = provider.logoFile!.readAsBytesSync();
     }
 
+    final selectedCompany = provider.selectedCompany;
+    final companyName = selectedCompany?.name ?? provider.companyName;
+    final companyAddress = selectedCompany?.address ?? provider.address;
+    final companyPhone = selectedCompany?.phone ?? provider.phone;
+
     return Quote(
-      companyName: provider.companyName,
-      address: provider.address,
+      companyName: companyName,
+      address: companyAddress,
       logoBytes: logoBytes,
-      phone: provider.phone,
+      phone: companyPhone,
       clientName: provider.customerName,
       transportCharges: provider.transportCharges,
       laborCharges: provider.laborCharges,
@@ -316,6 +457,16 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
           IconButton(
             icon: const Icon(Icons.preview),
             onPressed: () {
+              final provider = context.read<QuoteFormProvider>();
+              if (provider.selectedCompany == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Please select a company first'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+                return;
+              }
               final quote = _createQuote();
               Navigator.push(
                 context,
@@ -342,13 +493,14 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                if (!widget.isEditing) _buildCompanySelection(),
+                const SizedBox(height: 16),
                 CompanyInfoSection(
-                  companyController: _companyController,
-                  addressController: _addressController,
-                  phoneController: _phoneController,
+                  // companyController: _companyController,
+                  // addressController: _addressController,
+                  // phoneController: _phoneController,
                   pickLogo: _pickLogo,
-                  isReadOnly: widget
-                      .isEditing, // Make company info read-only when editing
+                  isReadOnly: widget.isEditing,
                 ),
                 if (widget.isEditing)
                   Padding(

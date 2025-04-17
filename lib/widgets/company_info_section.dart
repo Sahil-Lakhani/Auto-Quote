@@ -3,17 +3,17 @@ import 'package:provider/provider.dart';
 import '../providers/quote_form_provider.dart';
 
 class CompanyInfoSection extends StatelessWidget {
-  final TextEditingController companyController;
-  final TextEditingController addressController;
-  final TextEditingController phoneController;
+  // final TextEditingController companyController;
+  // final TextEditingController addressController;
+  // final TextEditingController phoneController;
   final Function() pickLogo;
   final bool isReadOnly;
 
   const CompanyInfoSection({
     super.key,
-    required this.companyController,
-    required this.addressController,
-    required this.phoneController,
+    // required this.companyController,
+    // required this.addressController,
+    // required this.phoneController,
     required this.pickLogo,
     this.isReadOnly = false,
   });
@@ -143,47 +143,47 @@ class CompanyInfoSection extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             _buildLogoPreview(context),
-            const SizedBox(height: 16),
-            TextField(
-              controller: companyController,
-              decoration: InputDecoration(
-                labelText: 'Company Name',
-                border: const OutlineInputBorder(),
-                prefixIcon: const Icon(Icons.business),
-                filled: isReadOnly,
-                fillColor: isReadOnly ? Colors.grey[200] : null,
-              ),
-              readOnly: isReadOnly,
-              enabled: !isReadOnly,
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: addressController,
-              decoration: InputDecoration(
-                labelText: 'Address',
-                border: const OutlineInputBorder(),
-                prefixIcon: const Icon(Icons.location_on),
-                filled: isReadOnly,
-                fillColor: isReadOnly ? Colors.grey[200] : null,
-              ),
-              maxLines: 2,
-              readOnly: isReadOnly,
-              enabled: !isReadOnly,
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: phoneController,
-              decoration: InputDecoration(
-                labelText: 'Phone',
-                border: const OutlineInputBorder(),
-                prefixIcon: const Icon(Icons.phone),
-                filled: isReadOnly,
-                fillColor: isReadOnly ? Colors.grey[200] : null,
-              ),
-              keyboardType: TextInputType.phone,
-              readOnly: isReadOnly,
-              enabled: !isReadOnly,
-            ),
+            // const SizedBox(height: 16),
+            // TextField(
+            //   controller: companyController,
+            //   decoration: InputDecoration(
+            //     labelText: 'Company Name',
+            //     border: const OutlineInputBorder(),
+            //     prefixIcon: const Icon(Icons.business),
+            //     filled: isReadOnly,
+            //     fillColor: isReadOnly ? Colors.grey[200] : null,
+            //   ),
+            //   readOnly: isReadOnly,
+            //   enabled: !isReadOnly,
+            // ),
+            // const SizedBox(height: 16),
+            // TextField(
+            //   controller: addressController,
+            //   decoration: InputDecoration(
+            //     labelText: 'Address',
+            //     border: const OutlineInputBorder(),
+            //     prefixIcon: const Icon(Icons.location_on),
+            //     filled: isReadOnly,
+            //     fillColor: isReadOnly ? Colors.grey[200] : null,
+            //   ),
+            //   maxLines: 2,
+            //   readOnly: isReadOnly,
+            //   enabled: !isReadOnly,
+            // ),
+            // const SizedBox(height: 16),
+            // TextField(
+            //   controller: phoneController,
+            //   decoration: InputDecoration(
+            //     labelText: 'Phone',
+            //     border: const OutlineInputBorder(),
+            //     prefixIcon: const Icon(Icons.phone),
+            //     filled: isReadOnly,
+            //     fillColor: isReadOnly ? Colors.grey[200] : null,
+            //   ),
+            //   keyboardType: TextInputType.phone,
+            //   readOnly: isReadOnly,
+            //   enabled: !isReadOnly,
+            // ),
           ],
         ),
       ),

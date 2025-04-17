@@ -45,145 +45,187 @@ class _RoomsSectionState extends State<RoomsSection> {
       padding: const EdgeInsets.all(16.0),
       child: Column(
         children: [
-          StreamBuilder<List<Product>>(
-            stream: _firebaseService.getProducts(),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return const CircularProgressIndicator();
-              }
+          Consumer<QuoteFormProvider>(
+            builder: (context, provider, child) {
+              // Get the selected company ID
+              final String? companyId = provider.selectedCompany?.id;
 
-              final products = snapshot.data!;
-              return Column(
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: DropdownButtonFormField<String>(
-                          value: _selectedProducts[roomIndex]?.id,
-                          decoration: const InputDecoration(
-                            labelText: 'Select Item',
-                            border: OutlineInputBorder(),
-                          ),
-                          items: products.map((product) {
-                            return DropdownMenuItem(
-                              value: product.id,
-                              child: Text(product.name),
-                            );
-                          }).toList(),
-                          onChanged: (String? value) {
-                            if (value != null) {
-                              final selectedProduct = products.firstWhere(
-                                (product) => product.id == value,
-                              );
-                              setState(() {
-                                _selectedProducts[roomIndex] = selectedProduct;
-                                context
-                                    .read<QuoteFormProvider>()
-                                    .updateItemQuantity(
-                                        roomIndex,
-                                        context
-                                                .read<QuoteFormProvider>()
-                                                .itemQuantities[roomIndex] ??
-                                            1);
-                              });
-                            }
-                          },
-                        ),
+              return StreamBuilder<List<Product>>(
+                // Filter products by company ID if available
+                stream: companyId != null
+                    ? _firebaseService.getProducts(companyId: companyId)
+                    : _firebaseService.getProducts(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: CircularProgressIndicator(),
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.remove),
-                        onPressed: context
+                    );
+                  }
+
+                  final products = snapshot.data!;
+
+                  if (products.isEmpty) {
+                    return Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        children: [
+                          const Text(
+                            'No products found for this company.',
+                            style: TextStyle(fontStyle: FontStyle.italic),
+                          ),
+                          const SizedBox(height: 8),
+                          ElevatedButton.icon(
+                            onPressed: () => _toggleAddMode(roomIndex),
+                            icon: const Icon(Icons.cancel),
+                            label: const Text('Cancel'),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  return Column(
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: DropdownButtonFormField<String>(
+                              value: _selectedProducts[roomIndex]?.id,
+                              decoration: const InputDecoration(
+                                labelText: 'Select Item',
+                                border: OutlineInputBorder(),
+                              ),
+                              items: products.map((product) {
+                                return DropdownMenuItem(
+                                  value: product.id,
+                                  child: Text(product.name),
+                                );
+                              }).toList(),
+                              onChanged: (String? value) {
+                                if (value != null) {
+                                  final selectedProduct = products.firstWhere(
+                                    (product) => product.id == value,
+                                  );
+                                  setState(() {
+                                    _selectedProducts[roomIndex] =
+                                        selectedProduct;
+                                    context
                                         .read<QuoteFormProvider>()
-                                        .itemQuantities[roomIndex] ==
-                                    null ||
-                                context
-                                        .read<QuoteFormProvider>()
-                                        .itemQuantities[roomIndex]! <=
-                                    1
-                            ? null
-                            : () {
-                                context
-                                    .read<QuoteFormProvider>()
-                                    .updateItemQuantity(
-                                        roomIndex,
-                                        (context
+                                        .updateItemQuantity(
+                                            roomIndex,
+                                            context
                                                     .read<QuoteFormProvider>()
                                                     .itemQuantities[roomIndex] ??
-                                                1) -
-                                            1);
+                                                1);
+                                  });
+                                }
                               },
-                      ),
-                      Text(
-                        '${context.read<QuoteFormProvider>().itemQuantities[roomIndex] ?? 1}',
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.add),
-                        onPressed: () {
-                          context.read<QuoteFormProvider>().updateItemQuantity(
-                              roomIndex,
-                              (context
-                                          .read<QuoteFormProvider>()
-                                          .itemQuantities[roomIndex] ??
-                                      1) +
-                                  1);
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      ElevatedButton(
-                        onPressed: _selectedProducts[roomIndex] == null
-                            ? null
-                            : () {
-                                final product = _selectedProducts[roomIndex]!;
-                                final quantity = context
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.remove),
+                            onPressed: context
+                                            .read<QuoteFormProvider>()
+                                            .itemQuantities[roomIndex] ==
+                                        null ||
+                                    context
+                                            .read<QuoteFormProvider>()
+                                            .itemQuantities[roomIndex]! <=
+                                        1
+                                ? null
+                                : () {
+                                    context
                                         .read<QuoteFormProvider>()
-                                        .itemQuantities[roomIndex] ??
-                                    1;
-
-                                final item = QuoteItem(
-                                  description: product.name,
-                                  dimensions: [
-                                    if (product.height != null)
-                                      'H: ${product.height!.formatted}',
-                                    if (product.width != null)
-                                      'W: ${product.width!.formatted}',
-                                    if (product.depth != null)
-                                      'D: ${product.depth!.formatted}',
-                                  ].join(' × '),
-                                  pricePerSqft: product.pricePerSqft,
-                                  quantity: quantity.toInt(),
-                                  unitPrice: product.price,
-                                  totalPrice: product.price * quantity,
-                                  totalSqft: product.totalSquareFeet,
-                                );
-
-                                context
-                                    .read<QuoteFormProvider>()
-                                    .addItemToRoom(roomIndex, item);
-                                setState(() {
-                                  _selectedProducts.remove(roomIndex);
-                                  _roomsInAddMode.remove(roomIndex);
-                                });
-                                context
-                                    .read<QuoteFormProvider>()
-                                    .itemQuantities
-                                    .remove(roomIndex);
-                              },
-                        child: const Text('Add'),
+                                        .updateItemQuantity(
+                                            roomIndex,
+                                            (context
+                                                            .read<
+                                                                QuoteFormProvider>()
+                                                            .itemQuantities[
+                                                        roomIndex] ??
+                                                    1) -
+                                                1);
+                                  },
+                          ),
+                          Text(
+                            '${context.read<QuoteFormProvider>().itemQuantities[roomIndex] ?? 1}',
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.add),
+                            onPressed: () {
+                              context
+                                  .read<QuoteFormProvider>()
+                                  .updateItemQuantity(
+                                      roomIndex,
+                                      (context
+                                                  .read<QuoteFormProvider>()
+                                                  .itemQuantities[roomIndex] ??
+                                              1) +
+                                          1);
+                            },
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 16),
-                      OutlinedButton(
-                        onPressed: () => _toggleAddMode(roomIndex),
-                        child: const Text('Cancel'),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          ElevatedButton(
+                            onPressed: _selectedProducts[roomIndex] == null
+                                ? null
+                                : () {
+                                    final product =
+                                        _selectedProducts[roomIndex]!;
+                                    final quantity = context
+                                            .read<QuoteFormProvider>()
+                                            .itemQuantities[roomIndex] ??
+                                        1;
+
+                                    final item = QuoteItem(
+                                      description: product.name,
+                                      dimensions: [
+                                        if (product.height != null)
+                                          'H: ${product.height!.formatted}',
+                                        if (product.width != null)
+                                          'W: ${product.width!.formatted}',
+                                        if (product.depth != null)
+                                          'D: ${product.depth!.formatted}',
+                                      ].join(' × '),
+                                      pricePerSqft: product.pricePerSqft,
+                                      quantity: quantity.toInt(),
+                                      unitPrice: product.price,
+                                      totalPrice: product.price * quantity,
+                                      totalSqft: product.totalSquareFeet,
+                                    );
+
+                                    context
+                                        .read<QuoteFormProvider>()
+                                        .addItemToRoom(roomIndex, item);
+                                    setState(() {
+                                      _selectedProducts.remove(roomIndex);
+                                      _roomsInAddMode.remove(roomIndex);
+                                    });
+                                    context
+                                        .read<QuoteFormProvider>()
+                                        .itemQuantities
+                                        .remove(roomIndex);
+                                  },
+                            child: const Text('Add'),
+                          ),
+                          const SizedBox(width: 16),
+                          OutlinedButton(
+                            onPressed: () => _toggleAddMode(roomIndex),
+                            child: const Text('Cancel'),
+                          ),
+                        ],
                       ),
                     ],
-                  ),
-                ],
+                  );
+                },
               );
             },
           ),
@@ -282,7 +324,8 @@ class _RoomsSectionState extends State<RoomsSection> {
                                       children: [
                                         if (item.dimensions != null)
                                           Text(item.dimensions!),
-                                        Text('Unit Price: ₹${item.unitPrice.toStringAsFixed(2)}'),
+                                        Text(
+                                            'Unit Price: ₹${item.unitPrice.toStringAsFixed(2)}'),
                                         Text('Quantity: ${item.quantity}'),
                                       ],
                                     ),

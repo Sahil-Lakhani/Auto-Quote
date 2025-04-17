@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:auto_quote/models/company_model.dart';
 import 'package:auto_quote/models/quote_model.dart';
 import 'package:flutter/material.dart';
 
@@ -17,22 +18,48 @@ class QuoteFormProvider extends ChangeNotifier {
   int laborCharges = 0;
   int? _advancePaymentPercentage = 50;
   bool _isAdvancePaymentEnabled = true;
-
   bool _isGstEnabled = false;
+  String? _selectedCompanyId;
+  Company? _selectedCompany;
 
   bool get isGstEnabled => _isGstEnabled;
-
-  bool get isAdvancePaymentEnabled => _isAdvancePaymentEnabled; // New getter
+  bool get isAdvancePaymentEnabled => _isAdvancePaymentEnabled;
   int? get advancePaymentPercentage =>
       _isAdvancePaymentEnabled ? _advancePaymentPercentage : null;
+  String? get selectedCompanyId => _selectedCompanyId;
+  Company? get selectedCompany => _selectedCompany;
+  bool get hasSelectedCompany => _selectedCompany != null;
+  bool get hasLogo => _logoFile != null;
+  // bool get isCompanyInfoComplete => hasSelectedCompany && hasLogo;
 
   void toggleGst(bool value) {
     _isGstEnabled = value;
     notifyListeners();
   }
-    void toggleAdvancePayment(bool value) {
-    // New method
+
+  void toggleAdvancePayment(bool value) {
     _isAdvancePaymentEnabled = value;
+    notifyListeners();
+  }
+
+  void selectCompany(Company? company) {
+    _selectedCompany = company;
+    _selectedCompanyId = company?.id;
+    if (company != null) {
+      companyName = company.name;
+      address = company.address;
+      phone = company.phone;
+    }
+    notifyListeners();
+  }
+
+  void clearCompanySelection() {
+    _selectedCompany = null;
+    _selectedCompanyId = null;
+    companyName = '';
+    address = '';
+    phone = '';
+    _logoFile = null;
     notifyListeners();
   }
 
