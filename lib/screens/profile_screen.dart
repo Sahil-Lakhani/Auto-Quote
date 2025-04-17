@@ -15,7 +15,7 @@ import 'package:provider/provider.dart';
 import 'package:open_file/open_file.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:auto_quote/models/quote_model.dart';
-import 'package:auto_quote/screens/quote_form_screen.dart';
+import 'package:auto_quote/screens/quote_edit_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -158,18 +158,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) throw Exception('No user logged in');
 
-      // Get quotation data from Firebase using the file path
+      // Extract the filename from the path for more reliable matching
+      final fileName = file.path.split('/').last;
+
+      // Get quotation data from Firebase with a more flexible query
       final querySnapshot = await FirebaseFirestore.instance
           .collection('quotations')
           .where('userId', isEqualTo: user.uid)
-          .where('pdfPath', isEqualTo: file.path)
           .get();
 
       if (querySnapshot.docs.isEmpty) {
-        throw Exception('Quotation not found');
+        throw Exception('No quotations found for this user');
       }
 
-      final quotationDoc = querySnapshot.docs.first;
+      // Find the document where pdfPath ends with the filename
+      final quotationDoc = querySnapshot.docs.firstWhere(
+        (doc) => doc.data()['pdfPath'].toString().endsWith(fileName),
+        orElse: () => throw Exception('Quotation not found: $fileName'),
+      );
+
       final quotationData = quotationDoc.data();
 
       // Create a Quote object from the data
@@ -206,6 +213,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         cgst: (quotationData['cgst'] as num).toDouble(),
         sgst: (quotationData['sgst'] as num).toDouble(),
         grandTotal: (quotationData['grandTotal'] as num).toDouble(),
+        advancePaymentPercentage:
+            quotationData['advancePaymentPercentage'] != null
+                ? (quotationData['advancePaymentPercentage'] as num).toInt()
+                : null,
       );
 
       // Navigate to the edit screen with the quotation document ID
@@ -213,8 +224,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => QuoteFormScreen(
-              isEditing: true,
+            builder: (context) => QuoteEditScreen(
               quoteId: quotationDoc.id,
               quotationFile: file,
               existingQuote: quote,
@@ -452,8 +462,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               );
 
                               return ListTile(
-                                leading: const Icon(Icons.picture_as_pdf, size: 32,),
-                                title: Text(fileName, style: const TextStyle(fontSize:14)),
+                                leading: const Icon(
+                                  Icons.picture_as_pdf,
+                                  size: 32,
+                                ),
+                                title: Text(fileName,
+                                    style: const TextStyle(fontSize: 14)),
                                 subtitle: Text('Created: $fileDate'),
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
