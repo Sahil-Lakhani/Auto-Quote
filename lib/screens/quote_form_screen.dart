@@ -338,65 +338,6 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
     }
   }
 
-  // Widget _buildLogoPreview() {
-  //   return Consumer<QuoteFormProvider>(
-  //     builder: (context, provider, child) {
-  //       return Container(
-  //         height: 128,
-  //         decoration: BoxDecoration(
-  //           border: Border.all(color: Colors.grey),
-  //           borderRadius: BorderRadius.circular(8),
-  //         ),
-  //         child: provider.logoFile != null
-  //             ? Stack(
-  //                 fit: StackFit.expand,
-  //                 children: [
-  //                   ClipRRect(
-  //                     borderRadius: BorderRadius.circular(8),
-  //                     child: Image.file(
-  //                       provider.logoFile!,
-  //                       fit: BoxFit.cover,
-  //                     ),
-  //                   ),
-  //                   Positioned(
-  //                     top: 4,
-  //                     right: 4,
-  //                     child: Container(
-  //                       width: 34,
-  //                       height: 34,
-  //                       decoration: BoxDecoration(
-  //                         color: Colors.black.withOpacity(0.6),
-  //                         border: Border.all(color: Colors.white, width: 1),
-  //                         shape: BoxShape.circle,
-  //                       ),
-  //                       child: IconButton(
-  //                         icon: const Icon(
-  //                           Icons.close,
-  //                           color: Colors.white,
-  //                           size: 16,
-  //                         ),
-  //                         padding: EdgeInsets.zero,
-  //                         constraints: const BoxConstraints(),
-  //                         onPressed: () {
-  //                           provider.removeLogo();
-  //                         },
-  //                       ),
-  //                     ),
-  //                   ),
-  //                 ],
-  //               )
-  //             : Center(
-  //                 child: TextButton.icon(
-  //                   onPressed: _pickLogo,
-  //                   icon: const Icon(Icons.add_photo_alternate),
-  //                   label: const Text('Add Logo'),
-  //                 ),
-  //               ),
-  //       );
-  //     },
-  //   );
-  // }
-
   Quote _createQuote() {
     final provider = context.read<QuoteFormProvider>();
     Uint8List? logoBytes;
@@ -500,7 +441,6 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                   // addressController: _addressController,
                   // phoneController: _phoneController,
                   pickLogo: _pickLogo,
-                  isReadOnly: widget.isEditing,
                 ),
                 if (widget.isEditing)
                   Padding(
