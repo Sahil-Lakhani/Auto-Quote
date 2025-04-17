@@ -5,16 +5,15 @@ import 'package:auto_quote/providers/quote_form_provider.dart';
 import 'package:auto_quote/screens/quote_preview_screen.dart';
 import 'package:auto_quote/services/firestore_service.dart';
 import 'package:auto_quote/widgets/advance_payment_section.dart';
-import 'package:auto_quote/widgets/company_info_section.dart';
 import 'package:auto_quote/widgets/customer_info_section.dart';
 import 'package:auto_quote/widgets/charges_section.dart';
 import 'package:auto_quote/widgets/rooms_section.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
-import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:image_picker/image_picker.dart';
 
 class QuoteEditScreen extends StatefulWidget {
   final String quoteId;
@@ -43,6 +42,7 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
   final _transportController = TextEditingController();
   final _labourController = TextEditingController();
   final _advanceController = TextEditingController();
+  final ImagePicker _picker = ImagePicker();
 
   final QuoteFormProvider _editProvider = QuoteFormProvider();
   final FirestoreService _firestoreService = FirestoreService();
@@ -90,7 +90,6 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
   }
 
   void _initializeProviderWithQuote(Quote quote) {
-
     _editProvider.companyName = quote.companyName.trim().isNotEmpty
         ? quote.companyName
         : 'Unknown Company';
@@ -177,6 +176,39 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
     _roomTypeController.clear();
   }
 
+  Future<void> _pickLogo() async {
+    try {
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 512,
+        maxHeight: 512,
+      );
+
+      if (image == null) return;
+
+      final logoFile = File(image.path);
+      _editProvider.updateLogo(logoFile);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Logo updated successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error updating logo: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   Quote _createQuote() {
     Uint8List? logoBytes;
 
@@ -228,6 +260,125 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
     }
   }
 
+  Widget _buildLogoPreview(BuildContext context) {
+    return Consumer<QuoteFormProvider>(
+      builder: (context, provider, child) {
+        return Container(
+          height: 120,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey[300]!),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: provider.logoFile != null
+              ? Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: double.infinity,
+                        child: AspectRatio(
+                          aspectRatio: 16 / 9,
+                          child: Image.file(
+                            provider.logoFile!,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.6),
+                          shape: BoxShape.circle,
+                        ),
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.close,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          onPressed: () => provider.removeLogo(),
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              : widget.existingQuote.logoBytes != null
+                  ? Stack(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: SizedBox(
+                            width: double.infinity,
+                            height: double.infinity,
+                            child: AspectRatio(
+                              aspectRatio: 16 / 9,
+                              child: Image.memory(
+                                widget.existingQuote.logoBytes!,
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          top: 8,
+                          right: 8,
+                          child: Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.6),
+                              shape: BoxShape.circle,
+                            ),
+                            child: IconButton(
+                              icon: const Icon(
+                                Icons.close,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                              onPressed: () => provider.removeLogo(),
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  : Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.add_photo_alternate_outlined,
+                            size: 32,
+                            color: Colors.grey[600],
+                          ),
+                          TextButton(
+                            onPressed: _pickLogo,
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                            ),
+                            child: const Text('Choose File'),
+                          ),
+                        ],
+                      ),
+                    ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider.value(
@@ -236,25 +387,6 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
         appBar: AppBar(
           title: const Text('Edit Quote'),
           actions: [
-            // IconButton(
-            //   icon: const Icon(Icons.bug_report),
-            //   onPressed: () {
-            //     print(
-            //         'DEBUG: Company Name: ${widget.existingQuote.companyName}');
-            //     print('DEBUG: Address: ${widget.existingQuote.address}');
-            //     print('DEBUG: Phone: ${widget.existingQuote.phone}');
-            //     print(
-            //         'DEBUG: Has Logo: ${widget.existingQuote.logoBytes != null}');
-            //     print('SELECTED COMPANY: ${_selectedCompany?.name}');
-            //     print('SELECTED ADDRESS: ${_selectedCompany?.address}');
-            //     print('SELECTED PHONE: ${_selectedCompany?.phone}');
-
-            //     _loadCompanyData(widget.existingQuote.companyName);
-
-            //     ScaffoldMessenger.of(context).showSnackBar(
-            //         const SnackBar(content: Text('Company info refreshed')));
-            //   },
-            // ),
             IconButton(
               icon: const Icon(Icons.preview),
               onPressed: () {
@@ -354,6 +486,21 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
                             value: _selectedCompany?.gstNumber ??
                                 'No GST information',
                             fallback: 'No GST information available',
+                          ),
+                          const SizedBox(height: 16),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Company Logo',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              _buildLogoPreview(context),
+                            ],
                           ),
                         ],
                       ),
