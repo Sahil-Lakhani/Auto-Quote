@@ -28,7 +28,7 @@ class _CompanyListScreenState extends State<CompanyListScreen> {
   }
 
   Future<void> _joinCompany(BuildContext context) async {
-    // Show a dialog to enter company ID
+
     final TextEditingController controller = TextEditingController();
 
     final companyId = await showDialog<String>(

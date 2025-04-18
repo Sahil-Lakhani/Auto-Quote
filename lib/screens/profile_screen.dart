@@ -152,6 +152,62 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+    Future<void> _joinCompany(BuildContext context) async {
+    final TextEditingController controller = TextEditingController();
+
+    final companyId = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Join Company'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(
+            labelText: 'Enter Company ID',
+            hintText: 'e.g., acbd1234',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, controller.text.trim()),
+            child: const Text('Join'),
+          ),
+        ],
+      ),
+    );
+
+    if (companyId == null || companyId.isEmpty) return;
+
+    // Print statement as requested
+    print('Join company button clicked with ID: $companyId');
+
+    try {
+      final company = await _firestoreService.getCompanyById(companyId);
+      if (company == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Company not found')),
+        );
+        return;
+      }
+
+      final user = context.read<User?>();
+      if (user == null) return;
+
+      await _firestoreService.joinCompany(companyId, user.uid);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Successfully joined ${company.name}')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error joining company: $e')),
+      );
+    }
+  }
+
   Future<void> _editQuotation(File file) async {
     setState(() => _isLoading = true);
     try {
@@ -346,8 +402,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             Expanded(
                               child: ElevatedButton.icon(
                                 onPressed: _navigateToCreateCompany,
-                                icon: const Icon(Icons.add_business),
-                                label: const Text('Create Company'),
+                                icon: const Icon(Icons.add_business, size: 22,),
+                                label: const Text('Create',
+                                    style: TextStyle(fontSize: 18)),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor:
                                       Theme.of(context).primaryColor,
@@ -358,9 +415,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: OutlinedButton.icon(
-                                onPressed: _navigateToJoinCompany,
-                                icon: const Icon(Icons.group_add),
-                                label: const Text('Join Company'),
+                                onPressed:  () => _joinCompany(context),
+                                icon: const Icon(Icons.group_add,
+                                  size: 22,
+                                ),
+                                label: const Text('Join', style: TextStyle(fontSize: 18 )),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor:
                                       Theme.of(context).primaryColor,

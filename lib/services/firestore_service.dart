@@ -35,24 +35,49 @@ class FirestoreService {
   }
 
   Future<String> generateCompanyInviteCode(String companyId) async {
-    //? have to decide wheather to generate unique code or not and
-    //? have to decide weather to for how long and also how to show it in app
     try {
+      // First get the current invite code to delete it later
+      final companyDoc = await _firestore.collection('companies').doc(companyId).get();
+      final oldInviteCode = companyDoc.data()?['inviteCode'] as String?;
+      
       const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
       final random = Random();
-      final code =
-          List.generate(6, (index) => chars[random.nextInt(chars.length)])
-              .join();
-
-      // Create invite document
-      await _firestore.collection('companyInvites').doc(code).set({
-        'companyId': companyId,
-        'code': code,
-        'createdAt': FieldValue.serverTimestamp(),
-        'expiresAt':
-            Timestamp.fromDate(DateTime.now().add(const Duration(minutes: 1))),
-      });
-      return code;
+      String code;
+      bool isUnique = false;
+      
+      // Keep generating codes until we find a unique one
+      while (!isUnique) {
+        // Generate a random 6-character code
+        code = List.generate(6, (index) => chars[random.nextInt(chars.length)]).join();
+        
+        // Check if code exists in the invite_codes collection
+        final codeDoc = await _firestore.collection('invite_codes').doc(code).get();
+        
+        if (!codeDoc.exists) {
+          isUnique = true;
+          
+          // Add the code to the invite_codes collection
+          await _firestore.collection('invite_codes').doc(code).set({
+            'companyId': companyId,
+            'createdAt': FieldValue.serverTimestamp(),
+          });
+          
+          // Update company with new invite code
+          await _firestore.collection('companies').doc(companyId).update({
+            'inviteCode': code,
+          });
+          
+          // Delete the old invite code from the collection
+          if (oldInviteCode != null && oldInviteCode.isNotEmpty) {
+            await _firestore.collection('invite_codes').doc(oldInviteCode).delete();
+          }
+          
+          return code;
+        }
+      }
+      
+      // This should never happen since we return inside the while loop when we find a unique code
+      throw Exception('Failed to generate unique invite code');
     } catch (e) {
       print('Error generating invite code: $e');
       rethrow;
@@ -62,25 +87,18 @@ class FirestoreService {
   Future<Map<String, dynamic>?> verifyAndJoinCompany(
       String code, String userId) async {
     try {
-      final inviteDoc =
-          await _firestore.collection('companyInvites').doc(code).get();
+      // Check invite_codes collection first
+      final codeDoc =
+          await _firestore.collection('invite_codes').doc(code).get();
 
-      if (!inviteDoc.exists) {
+      if (!codeDoc.exists) {
         return {'success': false, 'message': 'Invalid invite code'};
       }
 
-      final inviteData = inviteDoc.data()!;
+      final data = codeDoc.data()!;
+      final companyId = data['companyId'] as String;
 
-      // Check if code is expired
-      final expiresAt = inviteData['expiresAt'] as Timestamp;
-      if (expiresAt.toDate().isBefore(DateTime.now())) {
-        // Delete expired code
-        await _firestore.collection('companyInvites').doc(code).delete();
-        return {'success': false, 'message': 'Invite code has expired'};
-      }
-
-      // Get company data
-      final companyId = inviteData['companyId'] as String;
+      // Get the company document
       final companyDoc =
           await _firestore.collection('companies').doc(companyId).get();
 
@@ -101,8 +119,6 @@ class FirestoreService {
       // Join company
       await joinCompany(companyId, userId);
 
-      await _firestore.collection('companyInvites').doc(code).delete();
-
       return {
         'success': true,
         'message': 'Successfully joined company',
@@ -120,24 +136,70 @@ class FirestoreService {
     required String address,
     required String gstNumber,
     required String phone,
-    Uint8List? logoBytes,
+    String inviteCode = '',
+    // Uint8List? logoBytes,
   }) async {
     final companyRef = _firestore.collection('companies').doc();
+    final String companyId = companyRef.id;
+
+    // Generate a unique invitation code if not provided
+    if (inviteCode.isEmpty) {
+      bool isUnique = false;
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      final random = Random();
+
+      while (!isUnique) {
+        inviteCode =
+            List.generate(6, (index) => chars[random.nextInt(chars.length)])
+                .join();
+
+        // Check if code exists in the invite_codes collection
+        final codeDoc =
+            await _firestore.collection('invite_codes').doc(inviteCode).get();
+
+        if (!codeDoc.exists) {
+          isUnique = true;
+
+          // Add the code to the invite_codes collection
+          await _firestore.collection('invite_codes').doc(inviteCode).set({
+            'companyId': companyId,
+            'createdAt': FieldValue.serverTimestamp(),
+          });
+        }
+      }
+    }
+
     await companyRef.set({
       'name': name,
       'ownerId': ownerId,
       'address': address,
       'gstNumber': gstNumber,
       'phone': phone,
-      'logoBytes': logoBytes,
+      'inviteCode': inviteCode,
+      // 'logoBytes': logoBytes,
       'createdAt': FieldValue.serverTimestamp(),
       'memberIds': [ownerId],
     });
-    return companyRef.id;
+    return companyId;
   }
 
   Future<void> deleteCompany(String companyId) async {
     try {
+      // Get company to find invite code
+      final companyDoc =
+          await _firestore.collection('companies').doc(companyId).get();
+
+      if (companyDoc.exists) {
+        final companyData = companyDoc.data();
+        final inviteCode = companyData?['inviteCode'] as String?;
+
+        // Delete the invite code document if it exists
+        if (inviteCode != null && inviteCode.isNotEmpty) {
+          await _firestore.collection('invite_codes').doc(inviteCode).delete();
+        }
+      }
+
+      // Delete the company document
       await _firestore.collection('companies').doc(companyId).delete();
     } catch (e) {
       print('Error deleting company: $e');

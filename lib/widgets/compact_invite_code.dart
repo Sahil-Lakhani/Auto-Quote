@@ -18,8 +18,10 @@ class CompactInviteCodeWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHigh.withValues(
-              alpha: 0.5),
+        color: Theme.of(context)
+            .colorScheme
+            .surfaceContainerHigh
+            .withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -65,6 +67,15 @@ class _CompanyInviteCodeWidgetState extends State<CompanyInviteCodeWidget> {
   String? _inviteCode;
   bool _isLoading = false;
 
+  @override
+  void initState() {
+    super.initState();
+    // Use existing invite code if available
+    if (widget.company.inviteCode.isNotEmpty) {
+      _inviteCode = widget.company.inviteCode;
+    }
+  }
+
   Future<void> _generateCode() async {
     setState(() => _isLoading = true);
     try {
@@ -105,7 +116,8 @@ class _CompanyInviteCodeWidgetState extends State<CompanyInviteCodeWidget> {
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
               : const Icon(Icons.sync, size: 16),
-          label: Text(_inviteCode == null ? 'Generate Code' : ''),
+          label:
+              Text(_inviteCode == null ? 'Generate Code' : ''),
           style: TextButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 6),
             minimumSize: const Size(0, 32),

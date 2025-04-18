@@ -9,6 +9,7 @@ class Company {
   final String ownerId;
   final List<String> memberIds;
   final DateTime createdAt;
+  final String inviteCode;
 
   Company({
     required this.id,
@@ -19,6 +20,7 @@ class Company {
     required this.ownerId,
     required this.memberIds,
     required this.createdAt,
+    this.inviteCode = '',
   });
 
   Map<String, dynamic> toMap() {
@@ -31,6 +33,7 @@ class Company {
       'ownerId': ownerId,
       'memberIds': memberIds,
       'createdAt': createdAt,
+      'inviteCode': inviteCode,
     };
   }
 
@@ -45,6 +48,7 @@ class Company {
       ownerId: data['ownerId'] ?? '',
       memberIds: List<String>.from(data['memberIds'] ?? []),
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      inviteCode: data['inviteCode'] ?? '',
     );
   }
 }
