@@ -80,23 +80,6 @@ class _CreateCompanyScreenState extends State<CreateCompanyScreen> {
           key: _formKey,
           child: ListView(
             children: [
-              // Company logo placeholder
-              Center(
-                child: Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.business,
-                    size: 50,
-                    color: Colors.grey,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
 
               // Company name
               TextFormField(
