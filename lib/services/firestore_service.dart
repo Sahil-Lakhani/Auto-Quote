@@ -136,51 +136,19 @@ class FirestoreService {
     required String address,
     required String gstNumber,
     required String phone,
-    String inviteCode = '',
-    // Uint8List? logoBytes,
   }) async {
     final companyRef = _firestore.collection('companies').doc();
-    final String companyId = companyRef.id;
-
-    // Generate a unique invitation code if not provided
-    if (inviteCode.isEmpty) {
-      bool isUnique = false;
-      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-      final random = Random();
-
-      while (!isUnique) {
-        inviteCode =
-            List.generate(6, (index) => chars[random.nextInt(chars.length)])
-                .join();
-
-        // Check if code exists in the invite_codes collection
-        final codeDoc =
-            await _firestore.collection('invite_codes').doc(inviteCode).get();
-
-        if (!codeDoc.exists) {
-          isUnique = true;
-
-          // Add the code to the invite_codes collection
-          await _firestore.collection('invite_codes').doc(inviteCode).set({
-            'companyId': companyId,
-            'createdAt': FieldValue.serverTimestamp(),
-          });
-        }
-      }
-    }
-
-    await companyRef.set({
+    await companyRef.set({  
       'name': name,
       'ownerId': ownerId,
       'address': address,
       'gstNumber': gstNumber,
       'phone': phone,
-      'inviteCode': inviteCode,
-      // 'logoBytes': logoBytes,
       'createdAt': FieldValue.serverTimestamp(),
       'memberIds': [ownerId],
+      'inviteCode': '',
     });
-    return companyId;
+    return companyRef.id;
   }
 
   Future<void> deleteCompany(String companyId) async {
