@@ -4,7 +4,9 @@ import 'firestore_service.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+      clientId:
+          "350613123262-ccdvqlg4udn3eqv7sfcijmvi56bto4e4.apps.googleusercontent.com");
   final FirestoreService _firestoreService = FirestoreService();
 
   // Stream to listen to auth state changes
