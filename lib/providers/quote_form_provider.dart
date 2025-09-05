@@ -12,6 +12,7 @@ class QuoteFormProvider extends ChangeNotifier {
   String customerName = '';
   String customerPhone = '';
   String date = '';
+  String notes = '';
   List<QuoteRoomType> rooms = [];
   Map<int, int> itemQuantities = {};
   int transportCharges = 0;
@@ -189,6 +190,11 @@ class QuoteFormProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void updateNotes(String value) {
+    notes = value;
+    notifyListeners();
+  }
+
   void clearForm() {
     companyName = '';
     address = '';
@@ -196,6 +202,7 @@ class QuoteFormProvider extends ChangeNotifier {
     phone = '';
     customerName = '';
     date = '';
+    notes = '';
     rooms.clear();
     itemQuantities.clear();
     transportCharges = 0;

@@ -50,6 +50,7 @@ class Quote {
   final double sgst;
   final double grandTotal;
   final int? advancePaymentPercentage;
+  final String notes;
 
   Quote({
     required this.companyName,
@@ -67,5 +68,6 @@ class Quote {
     required this.sgst,
     required this.grandTotal,
     this.advancePaymentPercentage = 50, // Default value is 50%
+    this.notes = '', // Default empty notes
   });
 }
