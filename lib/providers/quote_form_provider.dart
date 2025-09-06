@@ -19,6 +19,7 @@ class QuoteFormProvider extends ChangeNotifier {
   int laborCharges = 0;
   int? _advancePaymentPercentage = 50;
   bool _isAdvancePaymentEnabled = true;
+  bool _isNotesSectionEnable = true;
   bool _isGstEnabled = false;
   String? _selectedCompanyId;
   Company? _selectedCompany;
@@ -27,6 +28,8 @@ class QuoteFormProvider extends ChangeNotifier {
   bool get isAdvancePaymentEnabled => _isAdvancePaymentEnabled;
   int? get advancePaymentPercentage =>
       _isAdvancePaymentEnabled ? _advancePaymentPercentage : null;
+
+  bool get isNotesSectionEnable => _isNotesSectionEnable;
   String? get selectedCompanyId => _selectedCompanyId;
   Company? get selectedCompany => _selectedCompany;
   bool get hasSelectedCompany => _selectedCompany != null;
@@ -40,6 +43,14 @@ class QuoteFormProvider extends ChangeNotifier {
 
   void toggleAdvancePayment(bool value) {
     _isAdvancePaymentEnabled = value;
+    if (!value) _advancePaymentPercentage = 0;
+    notifyListeners();
+  }
+
+  void toggleNotesSection(bool value) {
+    // This method can be used to show/hide notes section if needed
+    _isNotesSectionEnable = value;
+    if (!value) notes = '';
     notifyListeners();
   }
 

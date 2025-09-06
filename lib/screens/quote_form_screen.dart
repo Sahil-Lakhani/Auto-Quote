@@ -9,6 +9,7 @@ import 'package:auto_quote/widgets/company_info_section.dart';
 import 'package:auto_quote/widgets/customer_info_section.dart';
 import 'package:auto_quote/widgets/charges_section.dart';
 import 'package:auto_quote/widgets/rooms_section.dart';
+import 'package:auto_quote/widgets/notes_section.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
@@ -47,6 +48,7 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
   final _transportController = TextEditingController();
   final _labourController = TextEditingController();
   final _advanceController = TextEditingController();
+  final _notesController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
   final FirestoreService _firestoreService = FirestoreService();
   List<Company>? _userCompanies;
@@ -178,6 +180,9 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
     _roomTypeController.dispose();
     _transportController.dispose();
     _labourController.dispose();
+    _advanceController.dispose();
+    _notesController.dispose();
+    // _picker.dispose();
     super.dispose();
   }
 
@@ -369,6 +374,8 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
       sgst: provider.sgst,
       grandTotal: provider.grandTotal,
       advancePaymentPercentage: provider.advancePaymentPercentage,
+      // notes: _notesController.text,
+      notes: provider.notes,
     );
   }
 
@@ -518,6 +525,8 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                 AdvancePaymentSection(
                   advanceController: _advanceController,
                 ),
+                const SizedBox(height: 16),
+                const NotesSection(),
                 const SizedBox(height: 16),
                 _buildSummary(),
               ],

@@ -68,6 +68,6 @@ class Quote {
     required this.sgst,
     required this.grandTotal,
     this.advancePaymentPercentage = 50, // Default value is 50%
-    this.notes = '', // Default empty notes
+    this.notes = '',
   });
 }

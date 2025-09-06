@@ -3,6 +3,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:intl/intl.dart';
 import '../models/quote_model.dart';
+import '../models/company_model.dart';
 
 class PdfService {
   static Future<Uint8List> generateQuote(Quote quote) async {
@@ -20,7 +21,11 @@ class PdfService {
             pw.SizedBox(height: 10),
             _buildPaymentAndSummary(quote),
             pw.SizedBox(height: 30),
-            _buildTermsAndConditions(quote.advancePaymentPercentage ?? 50),
+            if (quote.notes.isNotEmpty) ...[
+              _buildNotesSection(quote.notes),
+              pw.SizedBox(height: 20),
+            ],
+            _buildTermsAndConditions(quote.advancePaymentPercentage ?? 0),
             pw.SizedBox(height: 15),
             _buildFooter(),
           ];
@@ -510,7 +515,49 @@ class PdfService {
     );
   }
 
+  static pw.Widget _buildNotesSection(String notes) {
+    return pw.Container(
+      width: double.infinity,
+      decoration: pw.BoxDecoration(
+        border: pw.Border.all(color: PdfColors.grey300),
+        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
+      ),
+      padding: const pw.EdgeInsets.all(10),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(
+            'NOTES',
+            style: pw.TextStyle(
+              fontSize: 14,
+              fontWeight: pw.FontWeight.bold,
+              color: PdfColors.blue900,
+            ),
+          ),
+          pw.SizedBox(height: 8),
+          pw.Text(
+            notes,
+            style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey700),
+          ),
+        ],
+      ),
+    );
+  }
+
   static pw.Widget _buildTermsAndConditions(int advancePaymentPercentage) {
+    final defaultTerms = [
+      'Payment Terms: $advancePaymentPercentage% advance payment is required before delivery. The remaining amount shall be paid at the time of delivery.',
+      'Validity: This quotation is valid for a period of 15 days from the date of issuance.',
+      'Taxes: GST and other taxes as applicable under Indian law are included in the quoted prices unless otherwise specified.',
+      'Delivery: The estimated delivery time is subject to change based on stock availability and production schedule. Force majeure conditions may affect delivery timelines.',
+      'Cancellation: Orders once confirmed cannot be cancelled without written consent. Cancellation may attract a charge of 25% of the order value.',
+      'Warranty: Products are covered under warranty against manufacturing defects as per industry standards. The warranty does not cover damages due to mishandling or improper use.',
+      'Disputes: Any dispute arising out of this transaction shall be subject to the jurisdiction of courts in [Your City], India.',
+      'Images and Specifications: Product images and specifications are indicative. Actual products may vary slightly in appearance while maintaining functional equivalence.',
+      'Installation: Installation charges, if not mentioned separately, are not included in the quoted price.',
+      'Price Escalation: We reserve the right to revise prices in case of significant market fluctuations in material costs or statutory changes.',
+    ];
+
     return pw.Container(
       decoration: pw.BoxDecoration(
         border: pw.Border.all(color: PdfColors.grey300),
@@ -534,26 +581,10 @@ class PdfService {
             style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey700),
           ),
           pw.SizedBox(height: 8),
-          _buildTermItem('1.',
-              'Payment Terms: $advancePaymentPercentage% advance payment is required before delivery. The remaining amount shall be paid at the time of delivery.'),
-          _buildTermItem('2.',
-              'Validity: This quotation is valid for a period of 15 days from the date of issuance.'),
-          _buildTermItem('3.',
-              'Taxes: GST and other taxes as applicable under Indian law are included in the quoted prices unless otherwise specified.'),
-          _buildTermItem('4.',
-              'Delivery: The estimated delivery time is subject to change based on stock availability and production schedule. Force majeure conditions may affect delivery timelines.'),
-          _buildTermItem('5.',
-              'Cancellation: Orders once confirmed cannot be cancelled without written consent. Cancellation may attract a charge of 25% of the order value.'),
-          _buildTermItem('6.',
-              'Warranty: Products are covered under warranty against manufacturing defects as per industry standards. The warranty does not cover damages due to mishandling or improper use.'),
-          _buildTermItem('7.',
-              'Disputes: Any dispute arising out of this transaction shall be subject to the jurisdiction of courts in [Your City], India.'),
-          _buildTermItem('8.',
-              'Images and Specifications: Product images and specifications are indicative. Actual products may vary slightly in appearance while maintaining functional equivalence.'),
-          _buildTermItem('9.',
-              'Installation: Installation charges, if not mentioned separately, are not included in the quoted price.'),
-          _buildTermItem('10.',
-              'Price Escalation: We reserve the right to revise prices in case of significant market fluctuations in material costs or statutory changes.'),
+          ...defaultTerms.asMap().entries.map((entry) {
+            final index = entry.key + 1;
+            return _buildTermItem('$index.', entry.value);
+          }).toList(),
         ],
       ),
     );
