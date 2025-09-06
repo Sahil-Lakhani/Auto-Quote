@@ -39,6 +39,7 @@ class Quote {
   final String address;
   final Uint8List? logoBytes;
   final String phone;
+  final String gstNumber;
   final String clientName;
   final DateTime date;
   final List<QuoteRoomType> sections;
@@ -57,6 +58,7 @@ class Quote {
     required this.address,
     this.logoBytes,
     required this.phone,
+    required this.gstNumber,
     required this.clientName,
     required this.date,
     required this.sections,

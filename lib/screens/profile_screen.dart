@@ -258,6 +258,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final quote = Quote(
         companyName: quotationData['companyName'] as String,
         address: quotationData['address'] ?? '',
+        gstNumber: quotationData['gstNumber'] ?? '-',
         phone: quotationData['phone'] ?? '',
         clientName: quotationData['clientName'] as String,
         date: (quotationData['date'] as Timestamp).toDate(),

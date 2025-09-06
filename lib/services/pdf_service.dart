@@ -98,6 +98,8 @@ class PdfService {
                           _buildHeaderInfo('Address', quote.address),
                           pw.SizedBox(height: 4),
                           _buildHeaderInfo('Phone', quote.phone),
+                          pw.SizedBox(height: 4),
+                          _buildHeaderInfo('GST No', quote.gstNumber),
                         ],
                       ),
                     ),

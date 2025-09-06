@@ -218,31 +218,33 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
       logoBytes = widget.existingQuote.logoBytes;
     }
 
-    final companyName =
-        _selectedCompany?.name ?? widget.existingQuote.companyName;
-    final companyAddress =
-        _selectedCompany?.address ?? widget.existingQuote.address;
-    final companyPhone = _selectedCompany?.phone ?? widget.existingQuote.phone;
+  final companyName =
+    _selectedCompany?.name ?? widget.existingQuote.companyName;
+  final companyAddress =
+    _selectedCompany?.address ?? widget.existingQuote.address;
+  final companyPhone = _selectedCompany?.phone ?? widget.existingQuote.phone;
+  final gstNumber = _selectedCompany?.gstNumber ?? '';
 
-    return Quote(
-      companyName: companyName,
-      address: companyAddress,
-      logoBytes: logoBytes,
-      phone: companyPhone,
-      clientName: _editProvider.customerName,
-      transportCharges: _editProvider.transportCharges,
-      laborCharges: _editProvider.laborCharges,
-      date: _editProvider.date.isNotEmpty
-          ? DateFormat('dd/MM/yyyy').parse(_editProvider.date)
-          : DateTime.now(),
-      sections: _editProvider.rooms,
-      isGstEnabled: _editProvider.isGstEnabled,
-      subtotal: _editProvider.subtotal,
-      cgst: _editProvider.cgst,
-      sgst: _editProvider.sgst,
-      grandTotal: _editProvider.grandTotal,
-      advancePaymentPercentage: _editProvider.advancePaymentPercentage,
-    );
+  return Quote(
+    companyName: companyName,
+    address: companyAddress,
+    logoBytes: logoBytes,
+    phone: companyPhone,
+    gstNumber: gstNumber,
+    clientName: _editProvider.customerName,
+    transportCharges: _editProvider.transportCharges,
+    laborCharges: _editProvider.laborCharges,
+    date: _editProvider.date.isNotEmpty
+      ? DateFormat('dd/MM/yyyy').parse(_editProvider.date)
+      : DateTime.now(),
+    sections: _editProvider.rooms,
+    isGstEnabled: _editProvider.isGstEnabled,
+    subtotal: _editProvider.subtotal,
+    cgst: _editProvider.cgst,
+    sgst: _editProvider.sgst,
+    grandTotal: _editProvider.grandTotal,
+    advancePaymentPercentage: _editProvider.advancePaymentPercentage,
+  );
   }
 
   Future<void> _selectDate(BuildContext context) async {
