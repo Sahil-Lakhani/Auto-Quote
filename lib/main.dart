@@ -9,6 +9,7 @@ import 'package:auto_quote/providers/quote_form_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'services/firebase_auth_service.dart';
+import 'package:auto_quote/theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,10 +38,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Auto Quote',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        useMaterial3: true,
-      ),
+  theme: appTheme,
       home: const AuthenticationWrapper(),
     );
   }
@@ -85,26 +83,42 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _screens[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.description),
-            label: 'Quote',
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // If width is greater than 600, apply padding and max width (web/tablet)
+        bool isWide = constraints.maxWidth > 600;
+        Widget content = _screens[_selectedIndex];
+        if (isWide) {
+          content = Center(
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 900),
+              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+              child: content,
+            ),
+          );
+        }
+        return Scaffold(
+          body: content,
+          bottomNavigationBar: BottomNavigationBar(
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.description),
+                label: 'Quote',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.inventory),
+                label: 'Items',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person),
+                label: 'Profile',
+              ),
+            ],
+            currentIndex: _selectedIndex,
+            onTap: _onItemTapped,
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.inventory),
-            label: 'Items',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-      ),
+        );
+      },
     );
   }
 }

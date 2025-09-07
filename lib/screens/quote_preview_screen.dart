@@ -1,6 +1,7 @@
 import 'package:auto_quote/screens/profile_screen.dart';
 import 'package:auto_quote/services/storage_service.dart';
 import 'package:flutter/material.dart';
+import 'package:auto_quote/theme.dart';
 import 'package:printing/printing.dart';
 // import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -61,7 +62,7 @@ class _QuotePreviewScreenState extends State<QuotePreviewScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Quotation updated successfully'),
-              backgroundColor: Colors.green,
+              backgroundColor: kSuccessColor,
             ),
           );
 
@@ -78,7 +79,7 @@ class _QuotePreviewScreenState extends State<QuotePreviewScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Quotation saved successfully'),
-              backgroundColor: Colors.green,
+              backgroundColor: kSuccessColor,
             ),
           );
 
@@ -93,7 +94,7 @@ class _QuotePreviewScreenState extends State<QuotePreviewScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error saving quotation: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: kWarningColor,
           ),
         );
       }
@@ -122,7 +123,7 @@ class _QuotePreviewScreenState extends State<QuotePreviewScreen> {
                       height: 24,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        valueColor: AlwaysStoppedAnimation<Color>(kAccentColor),
                       ),
                     ),
                   ),
@@ -131,11 +132,11 @@ class _QuotePreviewScreenState extends State<QuotePreviewScreen> {
                   padding: const EdgeInsets.all(8.0),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor,
+                      color: kAccentColor,
                       borderRadius: BorderRadius.circular(8),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: kPrimaryTextColor.withOpacity(0.1),
                           spreadRadius: 1,
                           blurRadius: 3,
                           offset: const Offset(0, 1),
@@ -156,16 +157,13 @@ class _QuotePreviewScreenState extends State<QuotePreviewScreen> {
                             children: [
                               Icon(
                                 widget.isEditing ? Icons.update : Icons.save,
-                                color: Colors.white,
+                                color: kCardColor,
                                 size: 20,
                               ),
                               const SizedBox(width: 8),
                               Text(
                                 widget.isEditing ? 'Update' : 'Save',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: kCardColor, fontWeight: FontWeight.bold),
                               ),
                             ],
                           ),

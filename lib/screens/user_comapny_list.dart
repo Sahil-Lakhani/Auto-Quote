@@ -4,6 +4,8 @@ import 'package:auto_quote/services/firestore_service.dart';
 import 'package:auto_quote/widgets/compact_invite_code.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
+import 'package:auto_quote/theme.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
@@ -400,29 +402,23 @@ class _CompanyListScreenState extends State<CompanyListScreen> {
                                   Text('GST: ${company.gstNumber}'),
                                 Text(
                                   'Created: ${DateFormat('MMM d, yyyy').format(company.createdAt)}',
-                                  style: const TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 12,
-                                  ),
+                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: kSecondaryTextColor, fontSize: 12),
                                 ),
                                 Text(
                                   'Members: ${company.memberIds.length}',
-                                  style: const TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 12,
-                                  ),
+                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: kSecondaryTextColor, fontSize: 12),
                                 ),
                               ],
                             ),
                             trailing: isOwner
                                 ? const Chip(
                                     label: Text('Owner'),
-                                    backgroundColor: Colors.green,
+                                    backgroundColor: kSuccessColor,
                                     labelStyle: TextStyle(color: Colors.white),
                                   )
                                 : const Chip(
                                     label: Text('Member'),
-                                    backgroundColor: Colors.blue,
+                                    backgroundColor: kAccentColor,
                                     labelStyle: TextStyle(color: Colors.white),
                                   ),
                             isThreeLine: true,

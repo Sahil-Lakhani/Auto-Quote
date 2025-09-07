@@ -9,6 +9,7 @@ import 'package:auto_quote/models/company_model.dart';
 import 'package:auto_quote/widgets/company_invite_code.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:auto_quote/theme.dart';
 import 'package:intl/intl.dart';
 import '../services/storage_service.dart';
 import 'package:provider/provider.dart';
@@ -82,7 +83,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error signing out: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: kWarningColor,
           ),
         );
       }
@@ -119,7 +120,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error opening file: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: kWarningColor,
           ),
         );
       }
@@ -294,7 +295,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error loading quotation: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: kWarningColor,
           ),
         );
       }
@@ -329,7 +330,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       _handleLogout(context);
                     },
                     child: const Text('Logout',
-                        style: TextStyle(color: Colors.red)),
+                        style: TextStyle(color: kWarningColor)),
                   ),
                 ],
               ),
@@ -387,10 +388,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                             TextButton(
                               onPressed: _navigateToCompanyList,
-                              child: Text(
+                              child: const Text(
                                 'See All',
                                 style: TextStyle(
-                                  color: Theme.of(context).primaryColor,
+                                  color: kAccentColor,
                                 ),
                               ),
                             ),
@@ -407,8 +408,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 label: const Text('Create',
                                     style: TextStyle(fontSize: 18)),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor:
-                                      Theme.of(context).primaryColor,
+                                  backgroundColor: kAccentColor,
                                   foregroundColor: Colors.white,
                                 ),
                               ),
@@ -420,10 +420,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 icon: const Icon(Icons.group_add,
                                   size: 22,
                                 ),
-                                label: const Text('Join', style: TextStyle(fontSize: 18 )),
+                                label: Text('Join', style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontSize: 18)),
                                 style: OutlinedButton.styleFrom(
-                                  foregroundColor:
-                                      Theme.of(context).primaryColor,
+                                  foregroundColor: kAccentColor,
                                 ),
                               ),
                             ),

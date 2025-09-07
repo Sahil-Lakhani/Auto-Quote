@@ -18,6 +18,7 @@ import 'package:intl/intl.dart';
 import 'package:auto_quote/models/company_model.dart';
 import 'package:auto_quote/services/firestore_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:auto_quote/theme.dart';
 
 class QuoteFormScreen extends StatefulWidget {
   final bool isEditing;
@@ -53,6 +54,9 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
   final FirestoreService _firestoreService = FirestoreService();
   List<Company>? _userCompanies;
   StreamSubscription? _companiesSubscription;
+
+  // Color constants replaced by theme.dart
+  static const Color textColor = kPrimaryTextColor;
 
   @override
   void initState() {
@@ -190,17 +194,16 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
     return Consumer<QuoteFormProvider>(
       builder: (context, provider, child) {
         return Card(
+          color: kCardColor,
+          elevation: 2,
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Select Company',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 16),
                 if (_userCompanies == null)
@@ -209,9 +212,9 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                   Center(
                     child: Column(
                       children: [
-                        const Text(
+                        Text(
                           'No companies found. Please create a company first.',
-                          style: TextStyle(fontStyle: FontStyle.italic),
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(fontStyle: FontStyle.italic),
                         ),
                         const SizedBox(height: 16),
                         ElevatedButton.icon(
@@ -224,6 +227,11 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                               ),
                             );
                           },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: kAccentColor,
+                            foregroundColor: Colors.white,
+                            elevation: 2,
+                          ),
                           icon: const Icon(Icons.add_business),
                           label: const Text('Create Company'),
                         ),
@@ -241,15 +249,22 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                             ? _userCompanies!.firstWhere(
                                 (c) => c.id == provider.selectedCompany!.id)
                             : null,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
+                        decoration: InputDecoration(
+                          border: const OutlineInputBorder(),
                           labelText: 'Choose Company',
                           hintText: 'Select a company from the list',
+                          labelStyle: Theme.of(context).textTheme.bodyLarge,
+                          hintStyle: Theme.of(context).textTheme.bodySmall,
+                          filled: true,
+                          fillColor: kInputFillColor,
                         ),
                         items: _userCompanies!.map((company) {
                           return DropdownMenuItem<Company>(
                             value: company,
-                            child: Text(company.name),
+                            child: Text(
+                              company.name,
+                              style: Theme.of(context).textTheme.bodyLarge,
+                            ),
                           );
                         }).toList(),
                         onChanged: (company) {
@@ -271,8 +286,8 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                           padding: const EdgeInsets.only(top: 8.0),
                           child: Text(
                             'Selected: ${provider.selectedCompany!.name}',
-                            style: TextStyle(
-                              color: Colors.green[700],
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: kAccentColor,
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
                             ),
@@ -355,12 +370,14 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
     final companyName = selectedCompany?.name ?? provider.companyName;
     final companyAddress = selectedCompany?.address ?? provider.address;
     final companyPhone = selectedCompany?.phone ?? provider.phone;
+    final gstNumber = selectedCompany?.gstNumber ?? '';
 
     return Quote(
       companyName: companyName,
       address: companyAddress,
       logoBytes: logoBytes,
       phone: companyPhone,
+      gstNumber: gstNumber,
       clientName: provider.customerName,
       transportCharges: provider.transportCharges,
       laborCharges: provider.laborCharges,
@@ -399,11 +416,18 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: kBackgroundColor,
       appBar: AppBar(
-        title: Text(widget.isEditing ? 'Edit Quote' : 'Create Quote'),
+        backgroundColor: kCardColor,
+        foregroundColor: kPrimaryTextColor,
+        elevation: 2,
+        title: Text(
+          widget.isEditing ? 'Edit Quote' : 'Create Quote',
+          style: const TextStyle(color: kPrimaryTextColor),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.preview),
+            icon: const Icon(Icons.preview, color: kPrimaryTextColor),
             onPressed: () {
               final provider = context.read<QuoteFormProvider>();
               if (provider.selectedCompany == null) {
@@ -450,23 +474,33 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                   pickLogo: _pickLogo,
                 ),
                 if (widget.isEditing)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8.0),
                     child: Row(
                       children: [
-                        const Expanded(child: Divider(thickness: 1)),
+                        Expanded(
+                          child: Divider(
+                            thickness: 1,
+                            color: kSecondaryTextColor,
+                          ),
+                        ),
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          padding: EdgeInsets.symmetric(horizontal: 16.0),
                           child: Text(
                             'Editable Information',
                             style: TextStyle(
-                              color: Colors.grey[600],
+                              color: kSecondaryTextColor,
                               fontWeight: FontWeight.w500,
                               fontSize: 14,
                             ),
                           ),
                         ),
-                        const Expanded(child: Divider(thickness: 1)),
+                        Expanded(
+                          child: Divider(
+                            thickness: 1,
+                            color: kSecondaryTextColor,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -479,6 +513,8 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                 ),
                 const SizedBox(height: 16),
                 Card(
+                  color: kCardColor,
+                  elevation: 2,
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
@@ -489,6 +525,7 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
+                            color: kPrimaryTextColor,
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -497,15 +534,26 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                             Expanded(
                               child: TextField(
                                 controller: _roomTypeController,
+                                style:
+                                    const TextStyle(color: kPrimaryTextColor),
                                 decoration: const InputDecoration(
                                   labelText: 'Room Type',
+                                  labelStyle:
+                                      TextStyle(color: kPrimaryTextColor),
                                   border: OutlineInputBorder(),
+                                  filled: true,
+                                  fillColor: Colors.white,
                                 ),
                               ),
                             ),
                             const SizedBox(width: 16),
                             ElevatedButton(
                               onPressed: _addRoom,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: kAccentColor,
+                                foregroundColor: Colors.white,
+                                elevation: 2,
+                              ),
                               child: const Text('Add Room'),
                             ),
                           ],
@@ -541,6 +589,8 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
     return Consumer<QuoteFormProvider>(
       builder: (context, provider, child) {
         return Card(
+          color: kCardColor,
+          elevation: 2,
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -554,15 +604,20 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
+                        color: kPrimaryTextColor,
                       ),
                     ),
                     Row(
                       children: [
-                        const Text('GST'),
+                        const Text(
+                          'GST',
+                          style: TextStyle(color: kPrimaryTextColor),
+                        ),
                         const SizedBox(width: 8),
                         Switch(
                           value: provider.isGstEnabled,
                           onChanged: (value) => provider.toggleGst(value),
+                          activeColor: kAccentColor,
                         ),
                       ],
                     ),
@@ -576,7 +631,7 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                   const SizedBox(height: 8),
                   _buildSummaryRow('SGST (9%)', provider.sgst),
                 ],
-                const Divider(),
+                const Divider(color: kSecondaryTextColor),
                 _buildSummaryRow('Grand Total', provider.grandTotal,
                     isTotal: true),
               ],
@@ -596,6 +651,7 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
           style: TextStyle(
             fontSize: isTotal ? 18 : 16,
             fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+            color: kPrimaryTextColor,
           ),
         ),
         Text(
@@ -603,6 +659,7 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
           style: TextStyle(
             fontSize: isTotal ? 18 : 16,
             fontWeight: FontWeight.bold,
+            color: textColor,
           ),
         ),
       ],

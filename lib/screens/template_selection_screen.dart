@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:auto_quote/theme.dart';
 
 class TemplateSelectionScreen extends StatelessWidget {
   const TemplateSelectionScreen({super.key});
@@ -63,12 +64,12 @@ class TemplateSelectionScreen extends StatelessWidget {
             Expanded(
               child: Container(
                 width: double.infinity,
-                color: Colors.blue[200],
-                child: Center(
+                color: kAccentColor.withValues(alpha: 0.2),
+                child: const Center(
                   child: Icon(
                     Icons.description,
                     size: 48,
-                    color: Colors.white,
+                    color: kCardColor,
                   ),
                 ),
               ),

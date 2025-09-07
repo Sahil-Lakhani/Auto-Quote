@@ -4,7 +4,7 @@ class Company {
   final String id;
   final String name;
   final String address;
-  final String phone; // Changed from int to String to match TextField
+  final String phone; 
   final String gstNumber;
   final String ownerId;
   final List<String> memberIds;

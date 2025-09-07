@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:auto_quote/theme.dart';
 import 'dart:async'; // Import for StreamSubscription
 import '../models/product_model.dart';
 import '../models/company_model.dart';
@@ -7,7 +8,6 @@ import '../services/firestore_service.dart';
 import '../widgets/product_form.dart';
 import '../screens/profile_screen.dart'; // Import for ProfileScreen
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:provider/provider.dart';
 
 class ProductFormScreen extends StatefulWidget {
   const ProductFormScreen({super.key});
@@ -72,7 +72,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('Error loading companies: $error'),
-                backgroundColor: Colors.red,
+                backgroundColor: kWarningColor,
               ),
             );
           }
@@ -86,7 +86,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Error: $e'),
-              backgroundColor: Colors.red,
+              backgroundColor: kWarningColor,
             ),
           );
         }
@@ -138,7 +138,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                         content: Text(product != null
                             ? 'Product updated successfully'
                             : 'Product added successfully'),
-                        backgroundColor: Colors.green,
+                        backgroundColor: kSuccessColor,
                       ),
                     );
                   }
@@ -147,7 +147,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text('Error: ${e.toString()}'),
-                        backgroundColor: Colors.red,
+                        backgroundColor: kWarningColor,
                       ),
                     );
                   }
@@ -189,7 +189,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                   if (product.width != null) 'W: ${product.width!.formatted}',
                   if (product.depth != null) 'D: ${product.depth!.formatted}',
                 ].join(' × '),
-                style: TextStyle(color: Colors.grey[600]),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: kSecondaryTextColor),
               ),
           ],
         ),
@@ -197,11 +197,11 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
-              icon: const Icon(Icons.edit, color: Colors.blue),
+              icon: const Icon(Icons.edit, color: kAccentColor),
               onPressed: () => _showProductDialog(product),
             ),
             IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red),
+              icon: const Icon(Icons.delete, color: Colors.redAccent),
               onPressed: () => _deleteProduct(product),
             ),
           ],
@@ -224,7 +224,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
+              backgroundColor: kWarningColor,
               foregroundColor: Colors.white,
             ),
             child: const Text('Delete'),
@@ -240,7 +240,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Product deleted successfully'),
-              backgroundColor: Colors.green,
+              backgroundColor: kSuccessColor,
             ),
           );
         }
@@ -249,7 +249,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Error: ${e.toString()}'),
-              backgroundColor: Colors.red,
+              backgroundColor: kWarningColor,
             ),
           );
         }
@@ -291,9 +291,9 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              const Text(
+              Text(
                 'No companies found',
-                style: TextStyle(fontSize: 16),
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontSize: 16),
               ),
               const SizedBox(height: 8),
               const Text(
@@ -311,19 +311,19 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       );
     }
 
-    return Card(
+return Card(
       margin: const EdgeInsets.all(16.0),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Select Company',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
@@ -350,6 +350,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
         ),
       ),
     );
+
   }
 
   @override
@@ -365,7 +366,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
 
           if (_selectedCompanyId != null) ...[
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -374,7 +375,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                     icon: const Icon(Icons.add),
                     label: const Text('Add'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
+                      backgroundColor: kAccentColor,
                       foregroundColor: Colors.white,
                     ),
                   ),
@@ -385,7 +386,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                       if (snapshot.hasData) {
                         return Text(
                           'Total Items: ${snapshot.data!.length}',
-                          style: TextStyle(color: Colors.grey[600]),
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: kSecondaryTextColor),
                         );
                       }
                       return const Text('Loading...');
@@ -405,7 +406,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   filled: true,
-                  fillColor: Colors.grey[100],
+                  fillColor: kInputFillColor,
                 ),
                 onChanged: (value) {
                   setState(() {

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/quote_form_provider.dart';
+import '../theme.dart'; // import your theme colors
 
 class NotesSection extends StatefulWidget {
-  const NotesSection({Key? key}) : super(key: key);
+  const NotesSection({super.key});
 
   @override
   State<NotesSection> createState() => _NotesSectionState();
@@ -13,10 +14,22 @@ class _NotesSectionState extends State<NotesSection> {
   late final TextEditingController _notesController;
 
   @override
+  void initState() {
+    super.initState();
+    _notesController = TextEditingController();
+  }
+
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     final provider = Provider.of<QuoteFormProvider>(context, listen: false);
-    _notesController = TextEditingController(text: provider.notes);
+
+    // Ensure controller has provider’s value only on first load
+    if (_notesController.text.isEmpty && provider.notes.isNotEmpty) {
+      _notesController.text = provider.notes;
+    }
+
+    _notesController.removeListener(_onNotesChanged);
     _notesController.addListener(_onNotesChanged);
   }
 
@@ -39,7 +52,7 @@ class _NotesSectionState extends State<NotesSection> {
     return Consumer<QuoteFormProvider>(
       builder: (context, provider, child) {
         return Card(
-          color: const Color(0xFFF5EBE0), // secondaryColor
+          color: kCardColor, // from theme.dart
           elevation: 2,
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -50,21 +63,14 @@ class _NotesSectionState extends State<NotesSection> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       'Notes',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF2C2C2C),
-                      ),
+                      style: Theme.of(context).textTheme.titleLarge,
                     ),
                     Switch(
                       value: provider.isNotesSectionEnable,
                       onChanged: (value) {
                         provider.toggleNotesSection(value);
-                        if (!value) {
-                          _notesController.text = '';
-                        }
                       },
                     ),
                   ],
@@ -76,19 +82,15 @@ class _NotesSectionState extends State<NotesSection> {
                   TextField(
                     controller: _notesController,
                     maxLines: 3,
-                    style: const TextStyle(color: Color(0xFF2C2C2C)),
+                    style: Theme.of(context).textTheme.bodyLarge,
                     decoration: InputDecoration(
                       hintText: 'Enter any additional notes here...',
-                      hintStyle: const TextStyle(color: Color(0xFF4A4A4A)),
-                      border: const OutlineInputBorder(),
+                      hintStyle: Theme.of(context).textTheme.bodySmall,
                       filled: true,
-                      fillColor: Colors.white,
-                      contentPadding: const EdgeInsets.all(12),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Theme.of(context).primaryColor,
-                          width: 2.0,
-                        ),
+                      fillColor: kInputFillColor,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: kSecondaryTextColor.withValues(alpha: 0.2)),
                       ),
                     ),
                   ),

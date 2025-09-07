@@ -1,6 +1,8 @@
 import 'package:auto_quote/services/firestore_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
+import 'package:auto_quote/theme.dart';
 import 'package:provider/provider.dart';
 
 class CreateCompanyScreen extends StatefulWidget {
@@ -158,11 +160,11 @@ class _CreateCompanyScreenState extends State<CreateCompanyScreen> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _createCompany,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).primaryColor,
+                    backgroundColor: kAccentColor,
                     foregroundColor: Colors.white,
                   ),
                   child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
+                      ? CircularProgressIndicator(color: kAccentColor)
                       : const Text('Create Company'),
                 ),
               ),
