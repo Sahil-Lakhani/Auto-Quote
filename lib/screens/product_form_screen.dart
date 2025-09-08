@@ -350,7 +350,6 @@ return Card(
         ),
       ),
     );
-
   }
 
   @override

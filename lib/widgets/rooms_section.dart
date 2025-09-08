@@ -16,6 +16,13 @@ class _RoomsSectionState extends State<RoomsSection> {
   final FirebaseService _firebaseService = FirebaseService();
   final Map<int, Product?> _selectedProducts = {};
   final Set<int> _roomsInAddMode = {};
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   void _toggleAddMode(int roomIndex) {
     setState(() {
@@ -70,20 +77,23 @@ class _RoomsSectionState extends State<RoomsSection> {
                   if (products.isEmpty) {
                     return Padding(
                       padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        children: [
-                          const Text(
-                            'No products found for this company.',
-                            style: TextStyle(fontStyle: FontStyle.italic),
+                      child: Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text(
+                                'No products found for this company.',
+                                style: TextStyle(fontStyle: FontStyle.italic),
+                              ),
+                              const SizedBox(height: 8),
+                              ElevatedButton.icon(
+                                onPressed: () => _toggleAddMode(roomIndex),
+                                icon: const Icon(Icons.cancel),
+                                label: const Text('Cancel'),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 8),
-                          ElevatedButton.icon(
-                            onPressed: () => _toggleAddMode(roomIndex),
-                            icon: const Icon(Icons.cancel),
-                            label: const Text('Cancel'),
-                          ),
-                        ],
-                      ),
+                        )
                     );
                   }
 
@@ -358,7 +368,25 @@ class _RoomsSectionState extends State<RoomsSection> {
                         padding: const EdgeInsets.only(bottom: 10, top: 8),
                         child: Center(
                           child: ElevatedButton.icon(
-                            onPressed: () => _toggleAddMode(index),
+                            onPressed: () {
+                              if (provider.selectedCompany == null) {
+                                Scrollable.of(context).position.animateTo(
+                                      0,
+                                      duration:
+                                          const Duration(milliseconds: 500),
+                                      curve: Curves.easeInOut,
+                                    );
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Please select a company first'),
+                                    backgroundColor: Colors.red,
+                                    duration: Duration(seconds: 2),
+                                  ),
+                                );
+                              } else {
+                                _toggleAddMode(index);
+                              }
+                            },
                             icon: const Icon(Icons.add),
                             label: const Text('Add Item'),
                           ),

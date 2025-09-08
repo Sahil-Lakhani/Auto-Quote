@@ -251,7 +251,7 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                             : null,
                         decoration: InputDecoration(
                           border: const OutlineInputBorder(),
-                          labelText: 'Choose Company',
+                          // labelText: 'Choose Company',
                           hintText: 'Select a company from the list',
                           labelStyle: Theme.of(context).textTheme.bodyLarge,
                           hintStyle: Theme.of(context).textTheme.bodySmall,
