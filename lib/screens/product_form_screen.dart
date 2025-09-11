@@ -224,7 +224,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: kWarningColor,
+              backgroundColor: Colors.redAccent,
               foregroundColor: Colors.white,
             ),
             child: const Text('Delete'),
@@ -240,7 +240,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Product deleted successfully'),
-              backgroundColor: kSuccessColor,
+              backgroundColor: Colors.redAccent,
             ),
           );
         }
@@ -293,7 +293,10 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
             children: [
               Text(
                 'No companies found',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontSize: 16),
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyLarge
+                    ?.copyWith(fontSize: 16),
               ),
               const SizedBox(height: 8),
               const Text(
@@ -311,7 +314,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       );
     }
 
-return Card(
+    return Card(
       margin: const EdgeInsets.all(16.0),
       child: Padding(
         padding: const EdgeInsets.all(16.0),

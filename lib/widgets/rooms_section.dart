@@ -57,6 +57,15 @@ class _RoomsSectionState extends State<RoomsSection> {
               // Get the selected company ID
               final String? companyId = provider.selectedCompany?.id;
 
+              if (companyId == null) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Text("Please select a company first"),
+                  ),
+                );
+              }
+
               return StreamBuilder<List<Product>>(
                 // Filter products by company ID if available
                 stream: companyId != null
