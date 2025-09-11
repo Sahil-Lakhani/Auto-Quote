@@ -197,7 +197,7 @@ class PdfService {
             mainAxisAlignment: pw.MainAxisAlignment.end,
             children: [
               pw.Text(
-                'Room Total: ',
+                'Section Total: ',
                 style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
               ),
               pw.Text(

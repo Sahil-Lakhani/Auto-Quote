@@ -70,7 +70,7 @@ class _RoomsSectionState extends State<RoomsSection> {
                 // Filter products by company ID if available
                 stream: companyId != null
                     ? _firebaseService.getProducts(companyId: companyId)
-                    : _firebaseService.getProducts(),
+                    : _firebaseService.getProducts(companyId: companyId),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) {
                     return const Center(
@@ -414,7 +414,7 @@ class _RoomsSectionState extends State<RoomsSection> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             const Text(
-                              'Room Total:',
+                              'Section Total:',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,

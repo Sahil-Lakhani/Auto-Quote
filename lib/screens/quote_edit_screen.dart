@@ -543,7 +543,7 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            'Add Room',
+                            'Add Section',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -556,7 +556,7 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
                                 child: TextField(
                                   controller: _roomTypeController,
                                   decoration: const InputDecoration(
-                                    labelText: 'Room Type',
+                                    labelText: 'Section Type',
                                     border: OutlineInputBorder(),
                                   ),
                                 ),
@@ -564,7 +564,7 @@ class _QuoteEditScreenState extends State<QuoteEditScreen> {
                               const SizedBox(width: 16),
                               ElevatedButton(
                                 onPressed: _addRoom,
-                                child: const Text('Add Room'),
+                                child: const Text('Add Section'),
                               ),
                             ],
                           ),

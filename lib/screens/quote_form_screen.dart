@@ -521,7 +521,7 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Add Room',
+                          'Add Section',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -537,7 +537,7 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                                 style:
                                     const TextStyle(color: kPrimaryTextColor),
                                 decoration: const InputDecoration(
-                                  labelText: 'Room Type',
+                                  labelText: 'Section Type',
                                   labelStyle:
                                       TextStyle(color: kPrimaryTextColor),
                                   border: OutlineInputBorder(),
@@ -554,7 +554,7 @@ class _QuoteFormScreenState extends State<QuoteFormScreen> {
                                 foregroundColor: Colors.white,
                                 elevation: 2,
                               ),
-                              child: const Text('Add Room'),
+                              child: const Text('Add'),
                             ),
                           ],
                         ),
