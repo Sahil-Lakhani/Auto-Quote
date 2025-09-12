@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:auto_quote/theme.dart';
-import 'dart:async'; // Import for StreamSubscription
+import 'dart:async';
 import '../models/product_model.dart';
 import '../models/company_model.dart';
 import '../services/firebase_service.dart';
 import '../services/firestore_service.dart';
 import '../widgets/product_form.dart';
-import '../screens/profile_screen.dart'; // Import for ProfileScreen
+import '../screens/profile_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class ProductFormScreen extends StatefulWidget {
@@ -22,12 +22,9 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   final _searchController = TextEditingController();
   bool _isSearching = false;
 
-  // State for selected company
   String? _selectedCompanyId;
   List<Company> _userCompanies = [];
   bool _isLoadingCompanies = true;
-
-  // Stream subscription for companies
   StreamSubscription? _companiesSubscription;
 
   @override
@@ -36,27 +33,19 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     _loadUserCompanies();
   }
 
-  // Load user's companies
   Future<void> _loadUserCompanies() async {
     if (!mounted) return;
-
-    setState(() {
-      _isLoadingCompanies = true;
-    });
+    setState(() => _isLoadingCompanies = true);
 
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       try {
-        // Cancel any existing subscription
         _companiesSubscription?.cancel();
-
-        // Create a new subscription
         _companiesSubscription =
             _firestoreService.getUserCompanies(user.uid).listen((companies) {
           if (mounted) {
             setState(() {
               _userCompanies = companies;
-              // Select the first company by default if available
               if (_selectedCompanyId == null && companies.isNotEmpty) {
                 _selectedCompanyId = companies.first.id;
               }
@@ -65,10 +54,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           }
         }, onError: (error) {
           if (mounted) {
-            setState(() {
-              _isLoadingCompanies = false;
-            });
-
+            setState(() => _isLoadingCompanies = false);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('Error loading companies: $error'),
@@ -79,10 +65,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
         });
       } catch (e) {
         if (mounted) {
-          setState(() {
-            _isLoadingCompanies = false;
-          });
-
+          setState(() => _isLoadingCompanies = false);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Error: $e'),
@@ -92,17 +75,12 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
         }
       }
     } else {
-      if (mounted) {
-        setState(() {
-          _isLoadingCompanies = false;
-        });
-      }
+      if (mounted) setState(() => _isLoadingCompanies = false);
     }
   }
 
   @override
   void dispose() {
-    // Cancel subscription when widget is disposed
     _companiesSubscription?.cancel();
     _searchController.dispose();
     super.dispose();
@@ -122,15 +100,23 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
             padding: const EdgeInsets.all(24),
             child: ProductForm(
               product: product,
-              companyId: _selectedCompanyId, // Pass selected company ID
+              companyId: _selectedCompanyId,
               onSave: (newProduct) async {
                 try {
+                  if (_selectedCompanyId == null) {
+                    throw Exception("No company selected");
+                  }
+
                   if (product != null) {
                     await _firebaseService.updateProduct(
-                        product.id!, newProduct);
+                      _selectedCompanyId!,
+                      product.id!,
+                      newProduct,
+                    );
                   } else {
                     await _firebaseService.addProduct(newProduct);
                   }
+
                   if (mounted) {
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -189,7 +175,10 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                   if (product.width != null) 'W: ${product.width!.formatted}',
                   if (product.depth != null) 'D: ${product.depth!.formatted}',
                 ].join(' × '),
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: kSecondaryTextColor),
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
+                    ?.copyWith(color: kSecondaryTextColor),
               ),
           ],
         ),
@@ -233,9 +222,9 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       ),
     );
 
-    if (confirm == true && product.id != null) {
+    if (confirm == true && product.id != null && _selectedCompanyId != null) {
       try {
-        await _firebaseService.deleteProduct(product.id!);
+        await _firebaseService.deleteProduct(_selectedCompanyId!, product.id!);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -257,23 +246,17 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     }
   }
 
-  // Navigate to the profile screen properly
   void _navigateToProfile() {
-    // Use named route if available
     try {
       Navigator.pushNamed(context, '/profile');
     } catch (e) {
-      // Fallback to navigating by pushing a new route
       Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (context) => const ProfileScreen(),
-        ),
-      ).then((_) => _loadUserCompanies()); // Refresh companies when returning
+        MaterialPageRoute(builder: (context) => const ProfileScreen()),
+      ).then((_) => _loadUserCompanies());
     }
   }
 
-  // Build company selection dropdown
   Widget _buildCompanySelector() {
     if (_isLoadingCompanies) {
       return const Center(
@@ -358,17 +341,14 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Items Management'),
-      ),
+      appBar: AppBar(title: const Text('Items Management')),
       body: Column(
         children: [
-          // Company selector UI
           _buildCompanySelector(),
-
           if (_selectedCompanyId != null) ...[
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -383,12 +363,15 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                   ),
                   StreamBuilder<List<Product>>(
                     stream: _firebaseService.getProducts(
-                        companyId: _selectedCompanyId),
+                        companyId: _selectedCompanyId!),
                     builder: (context, snapshot) {
                       if (snapshot.hasData) {
                         return Text(
                           'Total Items: ${snapshot.data!.length}',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: kSecondaryTextColor),
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(color: kSecondaryTextColor),
                         );
                       }
                       return const Text('Loading...');
@@ -410,34 +393,31 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                   filled: true,
                   fillColor: kInputFillColor,
                 ),
-                onChanged: (value) {
-                  setState(() {
-                    _isSearching = value.isNotEmpty;
-                  });
-                },
+                onChanged: (value) =>
+                    setState(() => _isSearching = value.isNotEmpty),
               ),
             ),
             Expanded(
               child: StreamBuilder<List<Product>>(
                 stream: _isSearching
-                    ? _firebaseService.searchProducts(_searchController.text,
-                        companyId: _selectedCompanyId)
+                    ? _firebaseService.searchProducts(
+                        _searchController.text,
+                        companyId: _selectedCompanyId!,
+                      )
                     : _firebaseService.getProducts(
-                        companyId: _selectedCompanyId),
+                        companyId: _selectedCompanyId!,
+                      ),
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
                     return Center(child: Text('Error: ${snapshot.error}'));
                   }
-
                   if (!snapshot.hasData) {
                     return const Center(child: CircularProgressIndicator());
                   }
-
                   final products = snapshot.data!;
                   if (products.isEmpty) {
                     return const Center(child: Text('No products found'));
                   }
-
                   return ListView.builder(
                     padding: const EdgeInsets.all(16),
                     itemCount: products.length,

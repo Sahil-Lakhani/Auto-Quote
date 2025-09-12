@@ -17,6 +17,7 @@ import 'package:open_file/open_file.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:auto_quote/models/quote_model.dart';
 import 'package:auto_quote/screens/quote_edit_screen.dart';
+import '../widgets/join_company_button.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -415,16 +416,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                             const SizedBox(width: 8),
                             Expanded(
-                              child: OutlinedButton.icon(
-                                onPressed:  () => _joinCompany(context),
-                                icon: const Icon(Icons.group_add,
-                                  size: 22,
-                                ),
-                                label: Text('Join', style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontSize: 18)),
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: kAccentColor,
-                                ),
-                              ),
+                              child: JoinCompanyButton(
+                                  firestoreService: _firestoreService),
                             ),
                           ],
                         ),

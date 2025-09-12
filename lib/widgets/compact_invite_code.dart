@@ -17,7 +17,7 @@ class CompactInviteCodeWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 100, // Fixed width to prevent overflow
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       decoration: BoxDecoration(
         color: Theme.of(context)
             .colorScheme
@@ -32,7 +32,9 @@ class CompactInviteCodeWidget extends StatelessWidget {
             child: Text(
               inviteCode,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                    letterSpacing: 1.2,
                   ),
               overflow: TextOverflow.ellipsis,
             ),
@@ -43,7 +45,6 @@ class CompactInviteCodeWidget extends StatelessWidget {
               minWidth: 20,
               minHeight: 20,
             ),
-            padding: EdgeInsets.zero,
             visualDensity: VisualDensity.compact,
             onPressed: onCopy,
           ),
@@ -124,13 +125,13 @@ class _CompanyInviteCodeWidgetState extends State<CompanyInviteCodeWidget> {
                 : const Icon(Icons.add, size: 16),
             label: const Text('Generate Code'),
             style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+              // padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
               minimumSize: const Size(0, 32),
             ),
           ),
         if (_inviteCode != null)
           SizedBox(
-            width: 32,
+            // width: 55,
             height: 32,
             child: IconButton(
               icon: _isLoading

@@ -24,7 +24,6 @@ class _ProductFormState extends State<ProductForm> {
   final _pricePerSqftController = TextEditingController();
   final _descriptionController = TextEditingController();
 
-  // Dimension controllers
   final _heightFeetController = TextEditingController();
   final _heightInchesController = TextEditingController();
   final _widthFeetController = TextEditingController();
@@ -45,10 +44,10 @@ class _ProductFormState extends State<ProductForm> {
       if (_selectedType == ProductType.standalone) {
         _priceController.text = widget.product!.price.toString();
       } else {
-        _pricePerSqftController.text = widget.product!.pricePerSqft.toString();
+        _pricePerSqftController.text =
+            widget.product!.pricePerSqft?.toString() ?? '';
       }
 
-      // Initialize dimensions if they exist
       if (widget.product!.height != null) {
         _heightFeetController.text = widget.product!.height!.feet.toString();
         _heightInchesController.text =
@@ -81,16 +80,14 @@ class _ProductFormState extends State<ProductForm> {
   }
 
   Widget _buildDimensionFields(
-      String label,
-      TextEditingController feetController,
-      TextEditingController inchesController,
-      {bool required = false}) {
+    String label,
+    TextEditingController feetController,
+    TextEditingController inchesController, {
+    bool required = false,
+  }) {
     return Row(
       children: [
-        Expanded(
-          flex: 2,
-          child: Text(label),
-        ),
+        Expanded(flex: 2, child: Text(label)),
         Expanded(
           flex: 3,
           child: TextFormField(
@@ -102,12 +99,8 @@ class _ProductFormState extends State<ProductForm> {
             keyboardType: TextInputType.number,
             validator: required
                 ? (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Required';
-                    }
-                    if (int.tryParse(value) == null) {
-                      return 'Invalid number';
-                    }
+                    if (value == null || value.isEmpty) return 'Required';
+                    if (int.tryParse(value) == null) return 'Invalid number';
                     return null;
                   }
                 : null,
@@ -125,16 +118,10 @@ class _ProductFormState extends State<ProductForm> {
             keyboardType: TextInputType.number,
             validator: required
                 ? (value) {
-                    if (value == null || value.isEmpty) {
-                      return null; // Allow empty for inches
-                    }
-                    if (int.tryParse(value) == null) {
-                      return 'Invalid number';
-                    }
+                    if (value == null || value.isEmpty) return null;
+                    if (int.tryParse(value) == null) return 'Invalid number';
                     final inches = int.parse(value);
-                    if (inches >= 12) {
-                      return 'Must be < 12';
-                    }
+                    if (inches >= 12) return 'Must be < 12';
                     return null;
                   }
                 : null,
@@ -161,13 +148,11 @@ class _ProductFormState extends State<ProductForm> {
   }
 
   Product _createProduct() {
-    // Create dimensions if provided
     Dimension? height;
     Dimension? width;
     Dimension? depth;
 
     if (_selectedType == ProductType.dimensionBased) {
-      // Height and width are required for dimension-based products
       height = Dimension(
         feet: int.parse(_heightFeetController.text),
         inches: int.parse(_heightInchesController.text.isEmpty
@@ -181,7 +166,6 @@ class _ProductFormState extends State<ProductForm> {
             : _widthInchesController.text),
       );
 
-      // Depth is optional but only for dimension-based products
       if (_depthFeetController.text.isNotEmpty) {
         depth = Dimension(
           feet: int.parse(_depthFeetController.text),
@@ -190,20 +174,12 @@ class _ProductFormState extends State<ProductForm> {
               : _depthInchesController.text),
         );
       }
-
-      print('Creating dimension-based product:');
-      print('Height: ${height.formatted}');
-      print('Width: ${width.formatted}');
-      if (depth != null) print('Depth: ${depth.formatted}');
-      print('Price per sqft: ₹${_pricePerSqftController.text}');
-    } else {
-      print(
-          'Creating standalone product with price: ₹${_priceController.text}');
     }
 
     return Product(
       id: widget.product?.id,
       userId: widget.product?.userId,
+      // 🔑 Ensure companyId is always set
       companyId: widget.companyId ?? widget.product?.companyId,
       name: _nameController.text,
       type: _selectedType,
@@ -242,12 +218,8 @@ class _ProductFormState extends State<ProductForm> {
                 labelText: 'Name',
                 border: OutlineInputBorder(),
               ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter a name';
-                }
-                return null;
-              },
+              validator: (value) =>
+                  value == null || value.isEmpty ? 'Please enter a name' : null,
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<ProductType>(
@@ -264,11 +236,7 @@ class _ProductFormState extends State<ProductForm> {
                       : 'Dimension Based'),
                 );
               }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedType = value!;
-                });
-              },
+              onChanged: (value) => setState(() => _selectedType = value!),
             ),
             const SizedBox(height: 16),
             if (_selectedType == ProductType.standalone) ...[
@@ -281,12 +249,10 @@ class _ProductFormState extends State<ProductForm> {
                 ),
                 keyboardType: TextInputType.number,
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
+                  if (value == null || value.isEmpty)
                     return 'Please enter a price';
-                  }
-                  if (double.tryParse(value) == null) {
-                    return 'Please enter a valid number';
-                  }
+                  if (double.tryParse(value) == null)
+                    return 'Enter a valid number';
                   return null;
                 },
               ),
@@ -300,12 +266,10 @@ class _ProductFormState extends State<ProductForm> {
                 ),
                 keyboardType: TextInputType.number,
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a price per sq.ft';
-                  }
-                  if (double.tryParse(value) == null) {
-                    return 'Please enter a valid number';
-                  }
+                  if (value == null || value.isEmpty)
+                    return 'Enter price per sq.ft';
+                  if (double.tryParse(value) == null)
+                    return 'Enter a valid number';
                   return null;
                 },
               ),

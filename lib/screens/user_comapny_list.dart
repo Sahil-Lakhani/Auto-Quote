@@ -4,7 +4,7 @@ import 'package:auto_quote/services/firestore_service.dart';
 import 'package:auto_quote/widgets/compact_invite_code.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
+import '../widgets/join_company_button.dart';
 import 'package:auto_quote/theme.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -246,7 +246,7 @@ class _CompanyListScreenState extends State<CompanyListScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Leave', style: TextStyle(color: Colors.orange)),
+            child: const Text('Leave', style: TextStyle(color : Colors.red)),
           ),
         ],
       ),
@@ -359,14 +359,8 @@ class _CompanyListScreenState extends State<CompanyListScreen> {
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () => _joinCompany(context),
-                        icon: const Icon(Icons.group_add),
-                        label: const Text('Join Company'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Theme.of(context).primaryColor,
-                        ),
-                      ),
+                      child: JoinCompanyButton(
+                          firestoreService: _firestoreService),
                     ),
                   ],
                 ),
@@ -380,35 +374,44 @@ class _CompanyListScreenState extends State<CompanyListScreen> {
 
                     return Card(
                       margin: const EdgeInsets.symmetric(
-                        horizontal: 16.0,
-                        // vertical: 8.0,
+                          horizontal: 16.0, vertical: 8.0),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: const BorderSide(color: kAccentColor, width: 0.8),
                       ),
+                      elevation: 2,
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           ListTile(
                             title: Text(
                               company.name,
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
+                                fontSize: 18,
                               ),
                             ),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Address: ${company.address}'),
-                                Text('Phone: ${company.phone}'),
-                                if (company.gstNumber != null &&
-                                    company.gstNumber.isNotEmpty)
-                                  Text('GST: ${company.gstNumber}'),
-                                Text(
-                                  'Created: ${DateFormat('MMM d, yyyy').format(company.createdAt)}',
-                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: kSecondaryTextColor, fontSize: 12),
-                                ),
-                                Text(
-                                  'Members: ${company.memberIds.length}',
-                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: kSecondaryTextColor, fontSize: 12),
-                                ),
-                              ],
+                            subtitle: Padding(
+                              padding: const EdgeInsets.only(top: 8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Address: ${company.address}'),
+                                  Text('Phone: ${company.phone}'),
+                                  if (company.gstNumber.isNotEmpty)
+                                    Text('GST: ${company.gstNumber}'),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Members: ${company.memberIds.length}',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall
+                                        ?.copyWith(
+                                          color: kSecondaryTextColor,
+                                        ),
+                                  ),
+                                ],
+                              ),
                             ),
                             trailing: isOwner
                                 ? const Chip(
@@ -422,74 +425,60 @@ class _CompanyListScreenState extends State<CompanyListScreen> {
                                     labelStyle: TextStyle(color: Colors.white),
                                   ),
                             isThreeLine: true,
-                            contentPadding: const EdgeInsets.all(16),
+                            // contentPadding: const EdgeInsets.all(16),
                           ),
                           if (isOwner)
                             Padding(
-                              padding: const EdgeInsets.only(
-                                  left: 16.0, right: 16.0, bottom: 8.0),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Wrap(
-                                    spacing: 4,
-                                    children: [
-                                      TextButton.icon(
-                                        onPressed: () =>
-                                            _editCompany(context, company),
-                                        icon: const Icon(Icons.edit, size: 16),
-                                        label: const Text('Edit'),
-                                        style: TextButton.styleFrom(
-                                          foregroundColor: Colors.blue,
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 8, vertical: 4),
-                                          minimumSize: const Size(0, 32),
-                                        ),
-                                      ),
-                                      TextButton.icon(
-                                        onPressed: () =>
-                                            _deleteCompany(context, company),
-                                        icon:
-                                            const Icon(Icons.delete, size: 16),
-                                        label: const Text('Delete'),
-                                        style: TextButton.styleFrom(
-                                          foregroundColor: Colors.red,
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 8, vertical: 4),
-                                          minimumSize: const Size(0, 32),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  // if (isOwner)
-                                    CompanyInviteCodeWidget(company: company),
-                                ],
-                              ),
-                            )
-                          else // Members can leave
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                  left: 16.0, right: 16.0, bottom: 8.0),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
+                              padding: const EdgeInsets.only(left: 12.0, right: 12.0, bottom: 12.0),
+                              child: Wrap(
+                                spacing: 12,
+                                runSpacing:
+                                    8, // buttons wrap if screen is small
                                 children: [
                                   TextButton.icon(
                                     onPressed: () =>
-                                        _leaveCompany(context, company),
-                                    icon:
-                                        const Icon(Icons.exit_to_app, size: 16),
-                                    label: const Text('Leave Company'),
+                                        _editCompany(context, company),
+                                    icon: const Icon(Icons.edit,
+                                        color: Colors.blue),
+                                    label: const Text('Edit'),
                                     style: TextButton.styleFrom(
-                                      foregroundColor: Colors.orange,
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 8, vertical: 4),
-                                      minimumSize: const Size(0, 32),
+                                      foregroundColor: Colors.blue,
                                     ),
                                   ),
+                                  TextButton.icon(
+                                    onPressed: () =>
+                                        _deleteCompany(context, company),
+                                    icon: const Icon(Icons.delete,
+                                        color: Colors.red),
+                                    label: const Text('Delete'),
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: Colors.red,
+                                    ),
+                                  ),
+                                  CompanyInviteCodeWidget(company: company),
                                 ],
                               ),
-                            ),
+                            )
+                          else
+                             Padding(
+                               padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 12.0),
+                               child: SizedBox(
+                                  width: double.infinity,
+                                  child: OutlinedButton.icon(
+                                    onPressed: () =>
+                                        _leaveCompany(context, company),
+                                    icon: const Icon(Icons.exit_to_app),
+                                    label: const Text('Leave Company'),
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: Colors.redAccent,
+                                      side: const BorderSide(
+                                          color: Colors.redAccent),
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 12),
+                                    ),
+                                  ),
+                                ),
+                             ),
                         ],
                       ),
                     );

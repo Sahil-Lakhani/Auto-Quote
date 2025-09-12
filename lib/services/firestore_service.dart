@@ -84,10 +84,10 @@ class FirestoreService {
     }
   }
 
-  Future<Map<String, dynamic>?> verifyAndJoinCompany(
+Future<Map<String, dynamic>> verifyAndJoinCompany(
       String code, String userId) async {
     try {
-      // Check invite_codes collection first
+      // 1. Check invite_codes collection
       final codeDoc =
           await _firestore.collection('invite_codes').doc(code).get();
 
@@ -95,34 +95,26 @@ class FirestoreService {
         return {'success': false, 'message': 'Invalid invite code'};
       }
 
-      final data = codeDoc.data()!;
-      final companyId = data['companyId'] as String;
+      final companyId = codeDoc['companyId'] as String;
 
-      // Get the company document
+      // 2. Add user to company.memberIds
+      await _firestore.collection('companies').doc(companyId).update({
+        'memberIds': FieldValue.arrayUnion([userId]),
+      });
+
+      // 3. Add companyId to user's companies array
+      await _firestore.collection('users').doc(userId).update({
+        'companies': FieldValue.arrayUnion([companyId]),
+      });
+
+      // 4. Fetch company info (works now since user is a member)
       final companyDoc =
           await _firestore.collection('companies').doc(companyId).get();
-
-      if (!companyDoc.exists) {
-        return {'success': false, 'message': 'Company no longer exists'};
-      }
-
-      final companyData = companyDoc.data()!;
-
-      // Check if user is already a member
-      if ((companyData['memberIds'] as List).contains(userId)) {
-        return {
-          'success': false,
-          'message': 'You are already a member of this company'
-        };
-      }
-
-      // Join company
-      await joinCompany(companyId, userId);
 
       return {
         'success': true,
         'message': 'Successfully joined company',
-        'companyName': companyData['name'],
+        'companyName': companyDoc.data()?['name'] ?? 'Company',
       };
     } catch (e) {
       print('Error verifying invite code: $e');
